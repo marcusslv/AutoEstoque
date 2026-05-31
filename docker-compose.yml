@@ -1,0 +1,115 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: autoestoque_backend
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+    environment:
+      APP_ENV: local
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: autoestoque
+      DB_USERNAME: autoestoque
+      DB_PASSWORD: secret
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      SESSION_DRIVER: redis
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - autoestoque
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: autoestoque_nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./backend:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - autoestoque
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: autoestoque_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: autoestoque
+      POSTGRES_USER: autoestoque
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U autoestoque -d autoestoque"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - autoestoque
+
+  redis:
+    image: redis:7-alpine
+    container_name: autoestoque_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - autoestoque
+
+  queue:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: autoestoque_queue
+    working_dir: /var/www/html
+    command: php artisan queue:work --tries=3 --timeout=90
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      - backend
+      - redis
+      - postgres
+    profiles:
+      - workers
+    networks:
+      - autoestoque
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: autoestoque_scheduler
+    working_dir: /var/www/html
+    command: php artisan schedule:work
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      - backend
+      - redis
+      - postgres
+    profiles:
+      - workers
+    networks:
+      - autoestoque
+
+networks:
+  autoestoque:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
