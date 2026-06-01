@@ -530,6 +530,8 @@ app/
       Domain/
         Entities/
         ValueObjects/
+        Factories/
+        Validators/
         Repositories/
         Exceptions/
         Events/
@@ -549,6 +551,14 @@ app/
           Presenters/
           Resources/
         Routes/
+
+    Shared/
+      Domain/
+        Entities/
+        Notifications/
+        Exceptions/
+      Application/
+        Contracts/
 
     Inventory/
       Domain/
@@ -720,7 +730,120 @@ Responsavel por:
 
 Nao deve alterar estoque diretamente. Deve chamar um caso de uso do Inventory ou publicar evento de dominio/aplicacao para baixa.
 
-## 13. Multi-Tenant
+## 13. Factories De Dominio
+
+Entidades e aggregates devem ser criados por factories de dominio.
+
+A factory centraliza a montagem inicial da entidade e evita que use cases, controllers ou repositories espalhem regras de criacao pelo projeto.
+
+Para o AutoEstoque, a recomendacao e:
+
+- Criar factories dentro de `Domain/Factories`.
+- Usar factories para criar entidades e aggregates novos.
+- Manter validacoes simples dentro dos Value Objects.
+- Manter invariantes da entidade em `Domain/Validators`.
+- Fazer a entidade aplicar seu validator ao ser criada ou alterada.
+- Nao criar entidades diretamente dentro de controllers.
+- Evitar criar entidades diretamente dentro de use cases quando existir factory.
+
+Exemplo de estrutura:
+
+```text
+app/
+  Modules/
+    Catalog/
+      Domain/
+        Entities/
+          Product.php
+        Factories/
+          ProductFactory.php
+        Validators/
+          ProductValidator.php
+```
+
+Exemplo conceitual:
+
+```php
+final class ProductFactory
+{
+    public function create(
+        ProductId $id,
+        TenantId $tenantId,
+        string $name,
+        Sku $sku,
+        Barcode $barcode,
+        ?string $category,
+        ?string $brand,
+        ?string $supplier,
+        int $minimumStock,
+        Money $cost,
+    ): Product {
+        return new Product(
+            id: $id,
+            tenantId: $tenantId,
+            name: trim($name),
+            sku: $sku,
+            barcode: $barcode,
+            category: $this->nullableTrim($category),
+            brand: $this->nullableTrim($brand),
+            supplier: $this->nullableTrim($supplier),
+            minimumStock: $minimumStock,
+            cost: $cost,
+        );
+    }
+}
+```
+
+O use case fica responsavel por orquestrar o fluxo e chamar a factory:
+
+```php
+$product = $this->productFactory->create(
+    id: $productId,
+    tenantId: $tenantId,
+    name: $input->name,
+    sku: $sku,
+    barcode: $barcode,
+    category: $input->category,
+    brand: $input->brand,
+    supplier: $input->supplier,
+    minimumStock: $input->minimumStock,
+    cost: $cost,
+);
+```
+
+## 13.1 O Que A Factory Pode Fazer
+
+Factories de dominio podem:
+
+- Montar entidades novas.
+- Normalizar dados antes da entidade ser criada, como `trim` em textos opcionais.
+- Definir valores padrao do dominio.
+- Receber Value Objects ja criados pelo use case.
+- Criar aggregates com estrutura interna mais complexa.
+
+Factories de dominio nao devem:
+
+- Validar `Request` HTTP.
+- Consultar banco de dados.
+- Usar Eloquent.
+- Decidir permissao de usuario.
+- Buscar dados externos.
+- Conhecer response, controller ou presenter.
+
+## 13.2 Factory Versus Static Constructor
+
+Static constructors, como `Product::create()`, podem ser simples no inicio, mas tendem a crescer conforme a entidade ganha regras de criacao.
+
+Para manter o padrao do projeto consistente, a decisao do AutoEstoque e:
+
+- Entidades sao criadas por classes factory.
+- Entidades mantem seu estado e comportamento.
+- Entidades aplicam validators para proteger invariantes.
+- Use cases chamam factories do dominio.
+
+Assim, a criacao de entidades fica explicita e testavel.
+
+## 14. Multi-Tenant
 
 O AutoEstoque deve nascer multi-tenant.
 
@@ -744,7 +867,7 @@ final readonly class TenantContext
 }
 ```
 
-## 14. Eventos
+## 15. Eventos
 
 Eventos ajudam a desacoplar modulos.
 
@@ -765,7 +888,7 @@ Uso sugerido:
 
 No MVP, eventos podem ser sincronos dentro da aplicacao. Filas podem entrar quando houver necessidade.
 
-## 15. Transacoes
+## 16. Transacoes
 
 Operacoes criticas devem ser atomicas:
 
@@ -787,7 +910,7 @@ interface TransactionManager
 
 A Infrastructure implementa usando `DB::transaction`.
 
-## 16. Repositorios
+## 17. Repositorios
 
 Repositorios devem representar necessidades do caso de uso, nao simplesmente CRUD generico.
 
@@ -804,7 +927,7 @@ interface ProductRepository
 
 Evite criar repositorios genericos do tipo `BaseRepository` no inicio.
 
-## 17. Validacoes
+## 18. Validacoes
 
 Existem tres niveis de validacao:
 
@@ -834,7 +957,224 @@ Valida invariantes:
 - Saida nao pode exceder saldo.
 - SKU nao pode ser vazio.
 
-## 18. Como Lidar Com Eloquent
+## 18.1 Recomendacao Sobre Validators No Dominio
+
+Entidades e aggregates devem aplicar validators de dominio com Notification Pattern para proteger suas invariantes.
+
+Value Objects podem manter validacoes simples internamente, pois representam um unico valor e normalmente possuem regras pequenas e autocontidas.
+
+A `Notification` deve ser um atributo da entidade. Para isso, entidades de dominio devem herdar de uma entidade abstrata compartilhada, por exemplo `Shared\Domain\Entities\Entity`.
+
+A regra mais importante e:
+
+**validators de dominio nao devem depender do Laravel Validator, FormRequest, Eloquent, banco de dados ou HTTP.**
+
+Eles devem ser classes puras, focadas em proteger invariantes de negocio da entidade ou aggregate.
+
+Com Notification Pattern, o validator nao lanca excecao na primeira falha. Ele adiciona erros na `Notification` da propria entidade, permitindo que a entidade detecte todas as violacoes antes de bloquear a criacao ou alteracao do estado.
+
+Uso recomendado:
+
+- Quando a entidade comeca a acumular muitas validacoes no construtor.
+- Quando a mesma regra precisa ser reutilizada por metodos diferentes da entidade.
+- Quando a validacao envolve combinacao de varios atributos do aggregate.
+- Quando a regra continua sendo uma invariante do dominio, nao apenas formato de entrada.
+
+Uso nao recomendado:
+
+- Para validar se um campo veio no payload HTTP.
+- Para validar `required`, `string`, `max`, `email` ou regras de request.
+- Para consultar banco de dados.
+- Para validar permissao de usuario.
+- Para validar plano contratado.
+
+Esses casos pertencem a outras camadas.
+
+## 18.2 Separacao Entre FormRequest, Use Case E Domain Validator
+
+| Tipo de validacao | Onde fica | Exemplo |
+| --- | --- | --- |
+| Formato da entrada | `Interfaces/Http/Requests` | `name` obrigatorio, `cost_in_cents` inteiro, `currency` com 3 caracteres |
+| Regra do fluxo | `Application/UseCases` | SKU ja existe no tenant, usuario pode cadastrar produto |
+| Invariante do dominio | `Domain/Validators` com `Notification` ou Value Object | custo nao negativo, quantidade positiva, produto precisa ter nome valido |
+
+Essa separacao evita que o dominio conheca detalhes externos e tambem evita que as regras reais do negocio fiquem presas no `FormRequest`.
+
+## 18.3 Estrutura Recomendada Para Validators
+
+Validators de dominio devem ficar dentro do proprio modulo:
+
+```text
+app/
+  Modules/
+    Catalog/
+      Domain/
+        Entities/
+          Product.php
+        Validators/
+          ProductValidator.php
+        ValueObjects/
+          Sku.php
+          Money.php
+        Exceptions/
+          InvalidProductException.php
+    Shared/
+      Domain/
+        Entities/
+          Entity.php
+        Notifications/
+          Notification.php
+          NotificationError.php
+        Exceptions/
+          DomainValidationException.php
+```
+
+Para o AutoEstoque, a convencao recomendada e:
+
+- `ProductValidator` para validacoes da entidade `Product`.
+- `InventoryItemValidator` para validacoes do aggregate `InventoryItem`.
+- `ServiceOrderValidator` para validacoes do aggregate `ServiceOrder`.
+
+Entidades devem herdar de `Entity`, chamar seu validator no construtor ou em metodo de comportamento que altere estado relevante, e lancar uma excecao de validacao de dominio se a notification possuir erros.
+
+Value Objects pequenos devem continuar validando a si mesmos diretamente.
+
+Exemplo:
+
+```php
+final readonly class Money
+{
+    public function __construct(
+        public int $amountInCents,
+        public string $currency = 'BRL',
+    ) {
+        if ($this->amountInCents < 0) {
+            throw InvalidMoneyException::negativeAmount();
+        }
+    }
+}
+```
+
+Nesse caso, criar um `MoneyValidator` separado seria excesso, porque a regra pertence a um unico valor.
+
+## 18.4 Exemplo De Domain Validator
+
+Exemplo para produto:
+
+```php
+final class ProductValidator
+{
+    public static function validate(Product $product): void
+    {
+        if (trim($product->name()) === '') {
+            $product->notification()->add(
+                field: 'name',
+                message: 'Product name is required.',
+                code: 'product.name_required',
+            );
+        }
+
+        if ($product->minimumStock() < 0) {
+            $product->notification()->add(
+                field: 'minimum_stock',
+                message: 'Minimum stock cannot be negative.',
+                code: 'product.minimum_stock_negative',
+            );
+        }
+    }
+}
+```
+
+Uso dentro da entidade:
+
+```php
+abstract class Entity
+{
+    protected Notification $notification;
+
+    public function __construct()
+    {
+        $this->notification = new Notification();
+    }
+
+    public function notification(): Notification
+    {
+        return $this->notification;
+    }
+
+    protected function throwIfNotificationHasErrors(): void
+    {
+        if ($this->notification->hasErrors()) {
+            throw new DomainValidationException($this->notification);
+        }
+    }
+}
+```
+
+Uso dentro da entidade concreta:
+
+```php
+final class Product extends Entity
+{
+    public function __construct(
+        private readonly ProductId $id,
+        private readonly TenantId $tenantId,
+        private readonly string $name,
+        private readonly Sku $sku,
+        private readonly Barcode $barcode,
+        private readonly int $minimumStock,
+        private readonly Money $cost,
+    ) {
+        parent::__construct();
+
+        ProductValidator::validate($this);
+
+        $this->throwIfNotificationHasErrors();
+    }
+}
+```
+
+Se o validator nao tiver estado, pode ser estatico:
+
+```php
+ProductValidator::validate($product);
+```
+
+Se a validacao precisar de composicao ou configuracao, pode ser instanciado dentro de uma factory ou domain service. Ainda assim, ele deve continuar puro e sem dependencia de framework.
+
+## 18.5 Validators Nao Devem Substituir Value Objects
+
+Validators ajudam a organizar validacoes de entidades e aggregates, mas nao devem retirar responsabilidade dos Value Objects.
+
+Exemplos:
+
+- `Sku` deve garantir que o SKU nao seja vazio e pode normalizar para maiusculo.
+- `Money` deve garantir que o valor nao seja negativo.
+- `Quantity` deve garantir que quantidade seja positiva.
+- `ProductValidator` deve validar regras que envolvem o produto como um todo.
+
+Regra pratica:
+
+- Se a regra pertence a um unico valor, coloque no Value Object.
+- Se a regra pertence a entidade ou depende de varios atributos, coloque em um Domain Validator aplicado pela entidade.
+- Se a regra depende de banco, permissao, plano ou contexto externo, coloque no Use Case ou em um Domain/Application Service com contratos adequados.
+
+## 18.6 Decisao Recomendada Para O MVP
+
+Para o AutoEstoque, a recomendacao e:
+
+- Usar validacao direta em Value Objects pequenos.
+- Usar `Domain/Validators` com Notification Pattern para validacoes de entidades e aggregates.
+- Fazer entidades herdarem de `Shared\Domain\Entities\Entity`.
+- Manter a `Notification` como atributo da entidade.
+- Aplicar o validator dentro da propria entidade, acumulando erros na notification da entidade.
+- Lancar `DomainValidationException` quando a `Notification` possuir erros.
+- Nao usar `Illuminate\Validation\Validator` no dominio.
+- Nao passar arrays crus do request para validators de dominio.
+
+No estado atual do projeto, `Product` deve aplicar `ProductValidator`. Os Value Objects `Sku`, `Barcode`, `Money` e `ProductId` continuam validando suas regras simples internamente.
+
+## 19. Como Lidar Com Eloquent
 
 Eloquent deve ficar na Infrastructure.
 
@@ -852,7 +1192,7 @@ Controller
 
 O Eloquent Repository converte Model em Entidade de Dominio e Entidade em Model.
 
-## 19. API First
+## 20. API First
 
 Cada caso de uso deve ser exposto por endpoints claros.
 
@@ -871,7 +1211,7 @@ GET    /api/inventory/movements
 GET    /api/dashboard
 ```
 
-## 20. Riscos Da Arquitetura
+## 21. Riscos Da Arquitetura
 
 ### Risco 1 - Excesso De Camadas Para O MVP
 
@@ -902,16 +1242,17 @@ Mitigacao:
 - Testes garantindo isolamento entre oficinas.
 - Repositorios sempre filtrando por tenant.
 
-## 21. Decisoes Recomendadas Para O MVP
+## 22. Decisoes Recomendadas Para O MVP
 
 - Comecar com modulos Catalog, Inventory e Identity.
 - Implementar Product como entidade de dominio.
+- Criar entidades por factories de dominio.
 - Implementar InventoryItem e StockMovement como dominio forte.
 - Usar Eloquent apenas em Infrastructure.
 - Criar TenantContext desde o primeiro caso de uso.
 - Criar testes de dominio e aplicacao antes dos testes HTTP mais amplos.
 
-## 22. Ordem Sugerida De Implementacao
+## 23. Ordem Sugerida De Implementacao
 
 1. Estrutura modular do backend Laravel.
 2. TenantContext.

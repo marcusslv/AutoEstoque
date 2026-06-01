@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Modules\Catalog\Application\UseCases\CreateProduct;
+
+use App\Modules\Shared\Application\Contracts\InputDto;
+
+final readonly class CreateProductInput implements InputDto
+{
+    public function __construct(
+        public string $tenantId,
+        public string $name,
+        public string $sku,
+        public ?string $barcode,
+        public ?string $category,
+        public ?string $brand,
+        public ?string $supplier,
+        public int $minimumStock,
+        public int $costInCents,
+        public string $currency = 'BRL',
+    ) {}
+}

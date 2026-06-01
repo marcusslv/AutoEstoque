@@ -214,6 +214,7 @@ Rotas disponiveis na fundacao tecnica:
 ```text
 GET /api/v1/health
 GET /api/v1/context/tenant
+POST /api/v1/products
 ```
 
 A rota `/api/v1/context/tenant` valida o tenant temporario usando o header:
@@ -223,6 +224,30 @@ X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f41
 ```
 
 Esse header sera usado enquanto o fluxo completo de autenticacao e multiempresa ainda nao estiver implementado.
+
+Criar produto:
+
+```http
+POST /api/v1/products
+X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f41
+Content-Type: application/json
+```
+
+Payload:
+
+```json
+{
+  "name": "Filtro de oleo",
+  "sku": "FO-001",
+  "barcode": "7891234567890",
+  "category": "Filtros",
+  "brand": "Mann",
+  "supplier": "Auto Pecas Central",
+  "minimum_stock": 3,
+  "cost_in_cents": 2590,
+  "currency": "BRL"
+}
+```
 
 ## Estado Atual
 
@@ -237,6 +262,9 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - Middleware `tenant` usando o header `X-Tenant-Id`.
 - Migration da tabela `tenants`.
 - Rotas API em `routes/api.php`.
+- UC04 - Cadastrar produto/peca.
+- Migration da tabela `products`.
+- Modulo `Catalog` inicial.
 
 Validacoes ja realizadas:
 

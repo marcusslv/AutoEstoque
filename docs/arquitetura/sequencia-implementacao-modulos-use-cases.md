@@ -158,6 +158,11 @@ Componentes esperados:
 - `CreateProductOutput`.
 - `CreateProductUseCase`.
 - `Product` como entidade ou aggregate.
+- `ProductFactory` para criacao da entidade.
+- `ProductValidator` para invariantes da entidade.
+- Entidade abstrata compartilhada com `Notification` como atributo.
+- `Notification` para acumular erros de dominio dentro da entidade.
+- `DomainValidationException` para bloquear estado invalido.
 - Value Objects como `Sku`, `Barcode` e `Money`, se fizer sentido.
 - `ProductRepository`.
 - Implementacao Eloquent do repository.

@@ -31,12 +31,16 @@ app/
       Domain/
         Entities/
           Product.php
+        Factories/
+          ProductFactory.php
         ValueObjects/
           ProductId.php
           TenantId.php
           Sku.php
           Barcode.php
           Money.php
+        Validators/
+          ProductValidator.php
         Repositories/
           ProductRepository.php
         Exceptions/
@@ -164,6 +168,12 @@ final readonly class Money
 
 ## 4. Domain - Entidade Product
 
+Entidades devem aplicar validators de dominio para proteger suas invariantes.
+
+Value Objects podem manter validacoes simples internamente, mas a entidade deve delegar suas validacoes para um validator puro, por exemplo `ProductValidator`.
+
+A criacao de entidades deve ser feita por factories de dominio. Por isso, o use case nao deve chamar `new Product()` diretamente.
+
 ```php
 <?php
 
@@ -174,54 +184,28 @@ use App\Modules\Catalog\Domain\ValueObjects\Money;
 use App\Modules\Catalog\Domain\ValueObjects\ProductId;
 use App\Modules\Catalog\Domain\ValueObjects\Sku;
 use App\Modules\Catalog\Domain\ValueObjects\TenantId;
+use App\Modules\Catalog\Domain\Validators\ProductValidator;
+use App\Modules\Shared\Domain\Entities\Entity;
 
-final class Product
+final class Product extends Entity
 {
-    private function __construct(
-        private ProductId $id,
-        private TenantId $tenantId,
-        private string $name,
-        private Sku $sku,
-        private Barcode $barcode,
-        private ?string $category,
-        private ?string $brand,
-        private ?string $supplier,
-        private int $minimumStock,
-        private Money $cost,
+    public function __construct(
+        private readonly ProductId $id,
+        private readonly TenantId $tenantId,
+        private readonly string $name,
+        private readonly Sku $sku,
+        private readonly Barcode $barcode,
+        private readonly ?string $category,
+        private readonly ?string $brand,
+        private readonly ?string $supplier,
+        private readonly int $minimumStock,
+        private readonly Money $cost,
     ) {
-        if (trim($this->name) === '') {
-            throw new \InvalidArgumentException('Nome do produto e obrigatorio.');
-        }
+        parent::__construct();
 
-        if ($this->minimumStock < 0) {
-            throw new \InvalidArgumentException('Estoque minimo nao pode ser negativo.');
-        }
-    }
+        ProductValidator::validate($this);
 
-    public static function create(
-        ProductId $id,
-        TenantId $tenantId,
-        string $name,
-        Sku $sku,
-        Barcode $barcode,
-        ?string $category,
-        ?string $brand,
-        ?string $supplier,
-        int $minimumStock,
-        Money $cost,
-    ): self {
-        return new self(
-            id: $id,
-            tenantId: $tenantId,
-            name: $name,
-            sku: $sku,
-            barcode: $barcode,
-            category: $category,
-            brand: $brand,
-            supplier: $supplier,
-            minimumStock: $minimumStock,
-            cost: $cost,
-        );
+        $this->throwIfNotificationHasErrors();
     }
 
     public function id(): ProductId
@@ -274,6 +258,164 @@ final class Product
         return $this->cost;
     }
 }
+```
+
+## 4.1 Domain - Factory
+
+Factories de dominio centralizam a criacao de entidades novas.
+
+Elas podem normalizar valores antes da entidade ser instanciada, como aplicar `trim` em textos opcionais.
+
+Exemplo:
+
+```php
+<?php
+
+namespace App\Modules\Catalog\Domain\Factories;
+
+use App\Modules\Catalog\Domain\Entities\Product;
+use App\Modules\Catalog\Domain\ValueObjects\Barcode;
+use App\Modules\Catalog\Domain\ValueObjects\Money;
+use App\Modules\Catalog\Domain\ValueObjects\ProductId;
+use App\Modules\Catalog\Domain\ValueObjects\Sku;
+use App\Modules\Tenant\Domain\ValueObjects\TenantId;
+
+final class ProductFactory
+{
+    public function create(
+        ProductId $id,
+        TenantId $tenantId,
+        string $name,
+        Sku $sku,
+        Barcode $barcode,
+        ?string $category,
+        ?string $brand,
+        ?string $supplier,
+        int $minimumStock,
+        Money $cost,
+    ): Product {
+        return new Product(
+            id: $id,
+            tenantId: $tenantId,
+            name: trim($name),
+            sku: $sku,
+            barcode: $barcode,
+            category: $this->nullableTrim($category),
+            brand: $this->nullableTrim($brand),
+            supplier: $this->nullableTrim($supplier),
+            minimumStock: $minimumStock,
+            cost: $cost,
+        );
+    }
+
+    private function nullableTrim(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim($value);
+
+        return $value === '' ? null : $value;
+    }
+}
+```
+
+O use case deve usar a factory:
+
+```php
+$product = $this->productFactory->create(
+    id: $productId,
+    tenantId: $tenantId,
+    name: $input->name,
+    sku: $sku,
+    barcode: $barcode,
+    category: $input->category,
+    brand: $input->brand,
+    supplier: $input->supplier,
+    minimumStock: $input->minimumStock,
+    cost: $cost,
+);
+```
+
+## 4.2 Domain - Validator
+
+Validators de dominio devem ser usados com Notification Pattern para organizar invariantes de entidades e aggregates.
+
+Com esse padrao, o validator nao lanca excecao na primeira falha. Ele acumula erros na `Notification` da propria entidade, permitindo que a entidade bloqueie o estado invalido com todos os erros encontrados.
+
+Eles nao devem usar:
+
+- `FormRequest`.
+- `Illuminate\Validation\Validator`.
+- Eloquent.
+- Banco de dados.
+- HTTP.
+
+Exemplo:
+
+```php
+<?php
+
+namespace App\Modules\Catalog\Domain\Validators;
+
+use App\Modules\Catalog\Domain\Entities\Product;
+
+final class ProductValidator
+{
+    public static function validate(Product $product): void
+    {
+        if (trim($product->name()) === '') {
+            $product->notification()->add(
+                field: 'name',
+                message: 'Product name is required.',
+                code: 'product.name_required',
+            );
+        }
+
+        if ($product->minimumStock() < 0) {
+            $product->notification()->add(
+                field: 'minimum_stock',
+                message: 'Minimum stock cannot be negative.',
+                code: 'product.minimum_stock_negative',
+            );
+        }
+    }
+}
+```
+
+Uso dentro da entidade:
+
+```php
+final class Product extends Entity
+{
+    public function __construct(...)
+    {
+        parent::__construct();
+
+        ProductValidator::validate($this);
+
+        $this->throwIfNotificationHasErrors();
+    }
+}
+```
+
+Para o UC04, `ProductValidator` deve ser aplicado pela entidade `Product`. Validacoes simples de valores individuais continuam dentro dos Value Objects, como `Sku`, `Barcode`, `Money` e `ProductId`.
+
+Estrutura compartilhada recomendada:
+
+```text
+app/
+  Modules/
+    Shared/
+      Domain/
+        Entities/
+          Entity.php
+        Notifications/
+          Notification.php
+          NotificationError.php
+        Exceptions/
+          DomainValidationException.php
 ```
 
 ## 5. Domain - Contrato Do Repositorio
