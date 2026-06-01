@@ -234,6 +234,7 @@ GET /api/v1/health
 GET /api/v1/context/tenant
 GET /api/v1/stock
 GET /api/v1/inventory/alerts/minimum-stock
+GET /api/v1/inventory/alerts/zero-stock
 GET /api/v1/inventory/movements
 POST /api/v1/inventory/adjustments
 POST /api/v1/inventory/entries
@@ -254,6 +255,19 @@ Filtros aceitos:
 - `limit`: entre `1` e `100`
 
 Nesta versao, os alertas sao calculados sob demanda a partir de `products.minimum_stock` e `inventory_items.current_stock`. Produtos com saldo `0` ficam reservados para o alerta de estoque zerado.
+
+### Gerar Alertas De Estoque Zerado
+
+```http
+GET /api/v1/inventory/alerts/zero-stock
+X-Tenant-Id: {tenant_id}
+```
+
+Filtros aceitos:
+
+- `limit`: entre `1` e `100`
+
+Nesta versao, os alertas sao calculados sob demanda. Produtos sem movimentacao tambem aparecem como estoque zerado, pois o saldo considerado e `0`.
 
 ### Consultar Historico De Movimentacoes
 
@@ -474,6 +488,7 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - UC08 - Registrar saida de estoque.
 - UC09 - Registrar ajuste manual.
 - UC10 - Gerar alerta de estoque minimo.
+- UC11 - Gerar alerta de estoque zerado.
 - UC17 - Consultar historico de movimentacoes.
 - Migration da tabela `products`.
 - Migrations das tabelas `inventory_items` e `stock_movements`.
