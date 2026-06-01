@@ -232,6 +232,7 @@ Rotas disponiveis na fundacao tecnica:
 ```text
 GET /api/v1/health
 GET /api/v1/context/tenant
+GET /api/v1/dashboard
 GET /api/v1/stock
 GET /api/v1/inventory/alerts/minimum-stock
 GET /api/v1/inventory/alerts/zero-stock
@@ -242,6 +243,27 @@ POST /api/v1/inventory/outputs
 POST /api/v1/products
 PATCH /api/v1/products/{product}
 ```
+
+### Visualizar Dashboard
+
+```http
+GET /api/v1/dashboard
+X-Tenant-Id: {tenant_id}
+```
+
+Filtros aceitos:
+
+- `date`: data base para movimentacoes do dia. Quando omitido, usa a data atual.
+- `recent_movements_limit`: entre `1` e `20`.
+
+Indicadores retornados:
+
+- total de produtos.
+- produtos abaixo do minimo.
+- produtos zerados.
+- valor total em estoque.
+- movimentacoes do dia.
+- ultimas movimentacoes do dia.
 
 ### Gerar Alertas De Estoque Minimo
 
@@ -489,6 +511,7 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - UC09 - Registrar ajuste manual.
 - UC10 - Gerar alerta de estoque minimo.
 - UC11 - Gerar alerta de estoque zerado.
+- UC12 - Visualizar dashboard.
 - UC17 - Consultar historico de movimentacoes.
 - Migration da tabela `products`.
 - Migrations das tabelas `inventory_items` e `stock_movements`.

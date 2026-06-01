@@ -3,6 +3,7 @@
 use App\Modules\Catalog\Interfaces\Http\Controllers\CreateProductController;
 use App\Modules\Catalog\Interfaces\Http\Controllers\ListStockController;
 use App\Modules\Catalog\Interfaces\Http\Controllers\UpdateProductController;
+use App\Modules\Dashboard\Interfaces\Http\Controllers\ViewDashboardController;
 use App\Modules\Inventory\Interfaces\Http\Controllers\GenerateMinimumStockAlertsController;
 use App\Modules\Inventory\Interfaces\Http\Controllers\GenerateZeroStockAlertsController;
 use App\Modules\Inventory\Interfaces\Http\Controllers\ListStockMovementHistoryController;
@@ -25,6 +26,7 @@ Route::prefix('v1')->group(function (): void {
             ];
         });
 
+        Route::get('/dashboard', ViewDashboardController::class);
         Route::get('/stock', ListStockController::class);
         Route::get('/inventory/alerts/minimum-stock', GenerateMinimumStockAlertsController::class);
         Route::get('/inventory/alerts/zero-stock', GenerateZeroStockAlertsController::class);
