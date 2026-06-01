@@ -10,7 +10,7 @@ O objetivo nao e criar complexidade desnecessaria, mas proteger o dominio princi
 
 Para o AutoEstoque, a recomendacao e usar:
 
-- Backend em Laravel.
+- Backend em Laravel 13.
 - Modular Monolith.
 - Clean Architecture dentro de cada modulo.
 - DDD tatico nos modulos com regra de negocio relevante.

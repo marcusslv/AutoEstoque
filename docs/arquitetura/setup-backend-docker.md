@@ -6,6 +6,7 @@ Este documento explica como subir o ambiente local do backend do AutoEstoque usa
 
 O setup foi preparado para rodar a API Laravel com:
 
+- Laravel 13.
 - PHP 8.4 FPM.
 - Nginx.
 - PostgreSQL.
@@ -48,7 +49,7 @@ backend/
 
 | Servico | Funcao | Porta local |
 | --- | --- | --- |
-| `backend` | PHP 8.4 FPM com Composer e extensoes do Laravel | Interna |
+| `backend` | PHP 8.4 FPM com Composer e extensoes do Laravel 13 | Interna |
 | `nginx` | Servidor HTTP para acessar a API | `8080` |
 | `postgres` | Banco de dados PostgreSQL | `5432` |
 | `redis` | Cache, sessoes e filas | `6379` |
@@ -79,13 +80,15 @@ Esses valores tambem devem ser configurados no arquivo `backend/.env` depois que
 
 ## 5. Criar O Projeto Laravel
 
+O backend foi criado com Laravel 13, usando o template atual do `laravel/laravel`.
+
 Primeiro, construa a imagem PHP:
 
 ```bash
 docker compose build backend
 ```
 
-Depois, crie o Laravel dentro da pasta `backend/`:
+Para criar o Laravel dentro da pasta `backend/` em uma instalacao nova:
 
 ```bash
 docker compose run --rm backend composer create-project laravel/laravel .
@@ -223,6 +226,7 @@ Use `down -v` apenas quando quiser apagar os dados locais.
 ## 13. Observacoes Importantes
 
 - A aplicacao Laravel deve ficar em `backend/`.
+- A versao atual usada no backend e Laravel 13.
 - O Nginx aponta para `backend/public`.
 - O container `backend` usa PHP 8.4, alinhado com a decisao tecnica do projeto.
 - O PostgreSQL e o Redis ficam em volumes Docker persistentes.
