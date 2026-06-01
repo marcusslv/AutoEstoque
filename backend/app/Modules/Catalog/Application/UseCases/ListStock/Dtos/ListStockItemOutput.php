@@ -1,10 +1,8 @@
 <?php
 
-namespace App\Modules\Catalog\Application\UseCases\UpdateProduct;
+namespace App\Modules\Catalog\Application\UseCases\ListStock\Dtos;
 
-use App\Modules\Shared\Application\Contracts\OutputDto;
-
-final readonly class UpdateProductOutput implements OutputDto
+final readonly class ListStockItemOutput
 {
     public function __construct(
         public string $id,
@@ -16,6 +14,8 @@ final readonly class UpdateProductOutput implements OutputDto
         public ?string $brand,
         public ?string $supplier,
         public int $minimumStock,
+        public int $currentStock,
+        public string $stockStatus,
         public int $costInCents,
         public string $currency,
     ) {}

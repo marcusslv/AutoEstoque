@@ -2,7 +2,7 @@
 
 namespace App\Modules\Catalog\Interfaces\Http\Presenters;
 
-use App\Modules\Catalog\Application\UseCases\UpdateProduct\UpdateProductOutput;
+use App\Modules\Catalog\Application\UseCases\UpdateProduct\Dtos\UpdateProductOutput;
 use App\Modules\Shared\Application\Contracts\OutputDto;
 use App\Modules\Shared\Interfaces\Http\Presenters\JsonPresenter;
 use Illuminate\Http\JsonResponse;

@@ -2,9 +2,9 @@
 
 namespace Tests\Unit\Catalog;
 
-use App\Modules\Catalog\Application\UseCases\CreateProduct\CreateProductInput;
-use App\Modules\Catalog\Application\UseCases\CreateProduct\CreateProductOutput;
 use App\Modules\Catalog\Application\UseCases\CreateProduct\CreateProductUseCase;
+use App\Modules\Catalog\Application\UseCases\CreateProduct\Dtos\CreateProductInput;
+use App\Modules\Catalog\Application\UseCases\CreateProduct\Dtos\CreateProductOutput;
 use App\Modules\Catalog\Domain\Entities\Product;
 use App\Modules\Catalog\Domain\Exceptions\DuplicatedBarcodeException;
 use App\Modules\Catalog\Domain\Exceptions\DuplicatedSkuException;

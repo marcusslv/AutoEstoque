@@ -2,7 +2,7 @@
 
 namespace App\Modules\Inventory\Interfaces\Http\Presenters;
 
-use App\Modules\Inventory\Application\UseCases\RegisterStockOutput\RegisterStockOutputOutput;
+use App\Modules\Inventory\Application\UseCases\RegisterStockOutput\Dtos\RegisterStockOutputOutput;
 use App\Modules\Shared\Application\Contracts\OutputDto;
 use App\Modules\Shared\Interfaces\Http\Presenters\JsonPresenter;
 use Illuminate\Http\JsonResponse;

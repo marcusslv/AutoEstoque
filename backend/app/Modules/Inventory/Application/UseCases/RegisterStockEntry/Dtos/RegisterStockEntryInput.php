@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\Inventory\Application\UseCases\RegisterStockEntry;
+namespace App\Modules\Inventory\Application\UseCases\RegisterStockEntry\Dtos;
 
 use App\Modules\Shared\Application\Contracts\InputDto;
 

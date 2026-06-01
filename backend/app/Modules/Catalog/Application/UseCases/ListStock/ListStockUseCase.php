@@ -2,6 +2,9 @@
 
 namespace App\Modules\Catalog\Application\UseCases\ListStock;
 
+use App\Modules\Catalog\Application\UseCases\ListStock\Dtos\ListStockInput;
+use App\Modules\Catalog\Application\UseCases\ListStock\Dtos\ListStockItemOutput;
+use App\Modules\Catalog\Application\UseCases\ListStock\Dtos\ListStockOutput;
 use App\Modules\Catalog\Domain\Entities\Product;
 use App\Modules\Catalog\Domain\Repositories\ProductRepository;
 use App\Modules\Inventory\Domain\Repositories\InventoryItemRepository;

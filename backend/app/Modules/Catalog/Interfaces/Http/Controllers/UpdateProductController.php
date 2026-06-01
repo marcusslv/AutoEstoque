@@ -3,7 +3,7 @@
 namespace App\Modules\Catalog\Interfaces\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Catalog\Application\UseCases\UpdateProduct\UpdateProductInput;
+use App\Modules\Catalog\Application\UseCases\UpdateProduct\Dtos\UpdateProductInput;
 use App\Modules\Catalog\Application\UseCases\UpdateProduct\UpdateProductUseCase;
 use App\Modules\Catalog\Domain\Exceptions\DuplicatedBarcodeException;
 use App\Modules\Catalog\Domain\Exceptions\DuplicatedSkuException;

@@ -3,7 +3,7 @@
 namespace App\Modules\Catalog\Interfaces\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Catalog\Application\UseCases\ListStock\ListStockInput;
+use App\Modules\Catalog\Application\UseCases\ListStock\Dtos\ListStockInput;
 use App\Modules\Catalog\Application\UseCases\ListStock\ListStockUseCase;
 use App\Modules\Catalog\Interfaces\Http\Presenters\ListStockPresenter;
 use App\Modules\Catalog\Interfaces\Http\Requests\ListStockRequest;

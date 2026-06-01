@@ -2,6 +2,8 @@
 
 namespace App\Modules\Catalog\Application\UseCases\UpdateProduct;
 
+use App\Modules\Catalog\Application\UseCases\UpdateProduct\Dtos\UpdateProductInput;
+use App\Modules\Catalog\Application\UseCases\UpdateProduct\Dtos\UpdateProductOutput;
 use App\Modules\Catalog\Domain\Exceptions\DuplicatedBarcodeException;
 use App\Modules\Catalog\Domain\Exceptions\DuplicatedSkuException;
 use App\Modules\Catalog\Domain\Exceptions\ProductNotFoundException;

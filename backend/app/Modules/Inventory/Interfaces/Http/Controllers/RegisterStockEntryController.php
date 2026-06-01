@@ -4,7 +4,7 @@ namespace App\Modules\Inventory\Interfaces\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Catalog\Domain\Exceptions\ProductNotFoundException;
-use App\Modules\Inventory\Application\UseCases\RegisterStockEntry\RegisterStockEntryInput;
+use App\Modules\Inventory\Application\UseCases\RegisterStockEntry\Dtos\RegisterStockEntryInput;
 use App\Modules\Inventory\Application\UseCases\RegisterStockEntry\RegisterStockEntryUseCase;
 use App\Modules\Inventory\Interfaces\Http\Presenters\RegisterStockEntryPresenter;
 use App\Modules\Inventory\Interfaces\Http\Requests\RegisterStockEntryRequest;

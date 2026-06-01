@@ -3,6 +3,7 @@
 use App\Modules\Catalog\Interfaces\Http\Controllers\CreateProductController;
 use App\Modules\Catalog\Interfaces\Http\Controllers\ListStockController;
 use App\Modules\Catalog\Interfaces\Http\Controllers\UpdateProductController;
+use App\Modules\Inventory\Interfaces\Http\Controllers\ListStockMovementHistoryController;
 use App\Modules\Inventory\Interfaces\Http\Controllers\RegisterStockAdjustmentController;
 use App\Modules\Inventory\Interfaces\Http\Controllers\RegisterStockEntryController;
 use App\Modules\Inventory\Interfaces\Http\Controllers\RegisterStockOutputController;
@@ -23,6 +24,7 @@ Route::prefix('v1')->group(function (): void {
         });
 
         Route::get('/stock', ListStockController::class);
+        Route::get('/inventory/movements', ListStockMovementHistoryController::class);
         Route::post('/inventory/adjustments', RegisterStockAdjustmentController::class);
         Route::post('/inventory/entries', RegisterStockEntryController::class);
         Route::post('/inventory/outputs', RegisterStockOutputController::class);

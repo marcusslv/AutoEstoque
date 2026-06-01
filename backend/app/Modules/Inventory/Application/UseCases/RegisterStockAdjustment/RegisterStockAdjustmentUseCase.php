@@ -5,6 +5,8 @@ namespace App\Modules\Inventory\Application\UseCases\RegisterStockAdjustment;
 use App\Modules\Catalog\Domain\Exceptions\ProductNotFoundException;
 use App\Modules\Catalog\Domain\Repositories\ProductRepository;
 use App\Modules\Catalog\Domain\ValueObjects\ProductId as CatalogProductId;
+use App\Modules\Inventory\Application\UseCases\RegisterStockAdjustment\Dtos\RegisterStockAdjustmentInput;
+use App\Modules\Inventory\Application\UseCases\RegisterStockAdjustment\Dtos\RegisterStockAdjustmentOutput;
 use App\Modules\Inventory\Domain\Exceptions\InsufficientStockException;
 use App\Modules\Inventory\Domain\Factories\InventoryItemFactory;
 use App\Modules\Inventory\Domain\Factories\StockMovementFactory;

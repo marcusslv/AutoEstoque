@@ -1,19 +1,19 @@
 <?php
 
-namespace App\Modules\Inventory\Application\UseCases\RegisterStockEntry;
+namespace App\Modules\Inventory\Application\UseCases\ListStockMovementHistory\Dtos;
 
-use App\Modules\Shared\Application\Contracts\OutputDto;
-
-final readonly class RegisterStockEntryOutput implements OutputDto
+final readonly class ListStockMovementHistoryItemOutput
 {
     public function __construct(
-        public string $movementId,
-        public string $inventoryItemId,
+        public string $id,
         public string $tenantId,
         public string $productId,
+        public string $productName,
+        public string $productSku,
+        public string $userId,
+        public string $direction,
         public string $type,
         public int $quantity,
-        public int $currentStock,
         public string $reason,
         public ?string $note,
         public ?int $unitCostInCents,

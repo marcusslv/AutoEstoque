@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Modules\Catalog\Application\UseCases\CreateProduct;
+namespace App\Modules\Catalog\Application\UseCases\CreateProduct\Dtos;
 
-use App\Modules\Shared\Application\Contracts\InputDto;
+use App\Modules\Shared\Application\Contracts\OutputDto;
 
-final readonly class CreateProductInput implements InputDto
+final readonly class CreateProductOutput implements OutputDto
 {
     public function __construct(
+        public string $id,
         public string $tenantId,
         public string $name,
         public string $sku,
@@ -16,6 +17,6 @@ final readonly class CreateProductInput implements InputDto
         public ?string $supplier,
         public int $minimumStock,
         public int $costInCents,
-        public string $currency = 'BRL',
+        public string $currency,
     ) {}
 }

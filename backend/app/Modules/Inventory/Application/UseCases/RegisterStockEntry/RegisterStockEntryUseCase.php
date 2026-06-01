@@ -5,6 +5,8 @@ namespace App\Modules\Inventory\Application\UseCases\RegisterStockEntry;
 use App\Modules\Catalog\Domain\Exceptions\ProductNotFoundException;
 use App\Modules\Catalog\Domain\Repositories\ProductRepository;
 use App\Modules\Catalog\Domain\ValueObjects\ProductId as CatalogProductId;
+use App\Modules\Inventory\Application\UseCases\RegisterStockEntry\Dtos\RegisterStockEntryInput;
+use App\Modules\Inventory\Application\UseCases\RegisterStockEntry\Dtos\RegisterStockEntryOutput;
 use App\Modules\Inventory\Domain\Factories\InventoryItemFactory;
 use App\Modules\Inventory\Domain\Factories\StockMovementFactory;
 use App\Modules\Inventory\Domain\Repositories\InventoryItemRepository;

@@ -2,8 +2,8 @@
 
 namespace App\Modules\Catalog\Interfaces\Http\Presenters;
 
-use App\Modules\Catalog\Application\UseCases\ListStock\ListStockItemOutput;
-use App\Modules\Catalog\Application\UseCases\ListStock\ListStockOutput;
+use App\Modules\Catalog\Application\UseCases\ListStock\Dtos\ListStockItemOutput;
+use App\Modules\Catalog\Application\UseCases\ListStock\Dtos\ListStockOutput;
 use App\Modules\Shared\Application\Contracts\OutputDto;
 use App\Modules\Shared\Interfaces\Http\Presenters\JsonPresenter;
 use Illuminate\Http\JsonResponse;

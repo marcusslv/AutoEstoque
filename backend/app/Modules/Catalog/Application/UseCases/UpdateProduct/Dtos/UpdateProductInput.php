@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\Catalog\Application\UseCases\UpdateProduct;
+namespace App\Modules\Catalog\Application\UseCases\UpdateProduct\Dtos;
 
 use App\Modules\Shared\Application\Contracts\InputDto;
 

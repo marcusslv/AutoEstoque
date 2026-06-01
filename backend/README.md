@@ -199,6 +199,24 @@ app/
     Dashboard/
 ```
 
+Convencao para casos de uso:
+
+```text
+Application/
+  UseCases/
+    NomeDoCaso/
+      Contracts/
+        AlgumaPorta.php
+      Dtos/
+        NomeDoCasoInput.php
+        NomeDoCasoOutput.php
+      NomeDoCasoUseCase.php
+```
+
+- `Dtos`: entradas e saidas do caso de uso.
+- `Contracts`: portas especificas da aplicacao, como queries, gateways ou services externos.
+- `NomeDoCasoUseCase.php`: orquestra a regra de aplicacao e depende de contratos, repositorios e factories.
+
 Mais detalhes estao na documentacao da raiz:
 
 ```text
@@ -215,11 +233,36 @@ Rotas disponiveis na fundacao tecnica:
 GET /api/v1/health
 GET /api/v1/context/tenant
 GET /api/v1/stock
+GET /api/v1/inventory/movements
 POST /api/v1/inventory/adjustments
 POST /api/v1/inventory/entries
 POST /api/v1/inventory/outputs
 POST /api/v1/products
 PATCH /api/v1/products/{product}
+```
+
+### Consultar Historico De Movimentacoes
+
+```http
+GET /api/v1/inventory/movements
+X-Tenant-Id: {tenant_id}
+```
+
+Filtros aceitos:
+
+- `product_id`
+- `direction`: `entry` ou `output`
+- `type`: `purchase`, `return`, `service_consumption`, `loss`, `breakage` ou `manual_adjustment`
+- `user_id`
+- `occurred_from`
+- `occurred_to`
+- `limit`: entre `1` e `100`
+
+Exemplo:
+
+```http
+GET /api/v1/inventory/movements?direction=output&type=service_consumption&limit=20
+X-Tenant-Id: {tenant_id}
 ```
 
 ### Registrar Ajuste Manual De Estoque
@@ -416,6 +459,7 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - UC07 - Registrar entrada de estoque.
 - UC08 - Registrar saida de estoque.
 - UC09 - Registrar ajuste manual.
+- UC17 - Consultar historico de movimentacoes.
 - Migration da tabela `products`.
 - Migrations das tabelas `inventory_items` e `stock_movements`.
 - Modulo `Catalog` inicial.

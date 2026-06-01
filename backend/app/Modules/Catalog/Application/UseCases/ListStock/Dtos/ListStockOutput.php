@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\Catalog\Application\UseCases\ListStock;
+namespace App\Modules\Catalog\Application\UseCases\ListStock\Dtos;
 
 use App\Modules\Shared\Application\Contracts\OutputDto;
 

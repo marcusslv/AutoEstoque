@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Catalog;
 
-use App\Modules\Catalog\Application\UseCases\ListStock\ListStockInput;
-use App\Modules\Catalog\Application\UseCases\ListStock\ListStockOutput;
+use App\Modules\Catalog\Application\UseCases\ListStock\Dtos\ListStockInput;
+use App\Modules\Catalog\Application\UseCases\ListStock\Dtos\ListStockOutput;
 use App\Modules\Catalog\Application\UseCases\ListStock\ListStockUseCase;
 use App\Modules\Catalog\Domain\Entities\Product;
 use App\Modules\Catalog\Domain\Factories\ProductFactory;

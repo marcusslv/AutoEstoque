@@ -3,8 +3,8 @@
 namespace App\Modules\Catalog\Interfaces\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Catalog\Application\UseCases\CreateProduct\CreateProductInput;
 use App\Modules\Catalog\Application\UseCases\CreateProduct\CreateProductUseCase;
+use App\Modules\Catalog\Application\UseCases\CreateProduct\Dtos\CreateProductInput;
 use App\Modules\Catalog\Domain\Exceptions\DuplicatedBarcodeException;
 use App\Modules\Catalog\Domain\Exceptions\DuplicatedSkuException;
 use App\Modules\Catalog\Interfaces\Http\Presenters\CreateProductPresenter;
