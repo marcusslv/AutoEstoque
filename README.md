@@ -38,6 +38,3 @@ Issues, correções e pequenos exemplos práticos são bem-vindos. Prefira PRs p
 
 Este projeto está licenciado sob a Licença MIT. Consulte o arquivo [LICENSE](LICENSE) para os termos completos.
 
----
-
-Se quiser, posso também gerar um badge, um guia de execução passo-a-passo ou um exemplo mínimo de uso de IA integrado ao módulo `Catalog`.
