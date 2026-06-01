@@ -216,9 +216,64 @@ GET /api/v1/health
 GET /api/v1/context/tenant
 GET /api/v1/stock
 POST /api/v1/inventory/entries
+POST /api/v1/inventory/outputs
 POST /api/v1/products
 PATCH /api/v1/products/{product}
 ```
+
+### Registrar Entrada De Estoque
+
+```http
+POST /api/v1/inventory/entries
+X-Tenant-Id: {tenant_id}
+X-User-Id: {user_id}
+Content-Type: application/json
+```
+
+```json
+{
+  "product_id": "uuid-do-produto",
+  "type": "purchase",
+  "quantity": 5,
+  "reason": "Compra de reposicao",
+  "note": "Nota 123",
+  "unit_cost_in_cents": 2590
+}
+```
+
+Tipos de entrada aceitos:
+
+- `purchase`
+- `manual_adjustment`
+- `return`
+
+### Registrar Saida De Estoque
+
+```http
+POST /api/v1/inventory/outputs
+X-Tenant-Id: {tenant_id}
+X-User-Id: {user_id}
+Content-Type: application/json
+```
+
+```json
+{
+  "product_id": "uuid-do-produto",
+  "type": "service_consumption",
+  "quantity": 2,
+  "reason": "Consumo em servico",
+  "note": "OS 123"
+}
+```
+
+Tipos de saida aceitos:
+
+- `service_consumption`
+- `loss`
+- `breakage`
+- `manual_adjustment`
+
+Quando o estoque for insuficiente, a API retorna `409 Conflict`.
 
 A rota `/api/v1/context/tenant` valida o tenant temporario usando o header:
 

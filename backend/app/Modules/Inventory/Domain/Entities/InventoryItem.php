@@ -2,6 +2,7 @@
 
 namespace App\Modules\Inventory\Domain\Entities;
 
+use App\Modules\Inventory\Domain\Exceptions\InsufficientStockException;
 use App\Modules\Inventory\Domain\Validators\InventoryItemValidator;
 use App\Modules\Inventory\Domain\ValueObjects\InventoryItemId;
 use App\Modules\Inventory\Domain\ValueObjects\MovementQuantity;
@@ -28,6 +29,19 @@ final class InventoryItem extends Entity
     public function increase(MovementQuantity $quantity): void
     {
         $this->currentStock = $this->currentStock->add($quantity);
+
+        InventoryItemValidator::validate($this);
+
+        $this->throwIfNotificationHasErrors();
+    }
+
+    public function decrease(MovementQuantity $quantity): void
+    {
+        if ($quantity->value > $this->currentStock->value) {
+            throw new InsufficientStockException;
+        }
+
+        $this->currentStock = $this->currentStock->subtract($quantity);
 
         InventoryItemValidator::validate($this);
 

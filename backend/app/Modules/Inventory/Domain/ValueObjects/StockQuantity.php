@@ -17,4 +17,9 @@ final readonly class StockQuantity
     {
         return new self($this->value + $quantity->value);
     }
+
+    public function subtract(MovementQuantity $quantity): self
+    {
+        return new self($this->value - $quantity->value);
+    }
 }

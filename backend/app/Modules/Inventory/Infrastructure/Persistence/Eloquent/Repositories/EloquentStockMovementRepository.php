@@ -15,7 +15,7 @@ final class EloquentStockMovementRepository implements StockMovementRepository
             'tenant_id' => $movement->tenantId()->value,
             'product_id' => $movement->productId()->value,
             'user_id' => $movement->userId(),
-            'direction' => 'entry',
+            'direction' => $movement->direction(),
             'type' => $movement->type()->value,
             'quantity' => $movement->quantity()->value,
             'reason' => $movement->reason()->value,

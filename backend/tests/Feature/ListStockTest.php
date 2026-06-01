@@ -17,6 +17,7 @@ class ListStockTest extends TestCase
 
         $productId = $this->createProduct($tenantId, name: 'Filtro de oleo', sku: 'FO-001');
         $this->registerEntry($tenantId, $productId, 5);
+        $this->registerOutput($tenantId, $productId, 2);
         $this->createProduct($otherTenantId, name: 'Pastilha de freio', sku: 'PF-001', barcode: '7891234567891');
 
         $response = $this->withHeader('X-Tenant-Id', $tenantId)
@@ -26,7 +27,7 @@ class ListStockTest extends TestCase
             ->assertJsonPath('meta.total', 1)
             ->assertJsonPath('data.0.name', 'Filtro de oleo')
             ->assertJsonPath('data.0.sku', 'FO-001')
-            ->assertJsonPath('data.0.current_stock', 5)
+            ->assertJsonPath('data.0.current_stock', 3)
             ->assertJsonPath('data.0.stock_status', 'available');
     }
 
@@ -110,6 +111,19 @@ class ListStockTest extends TestCase
             'type' => 'purchase',
             'quantity' => $quantity,
             'reason' => 'Compra de reposicao',
+        ])->assertCreated();
+    }
+
+    private function registerOutput(string $tenantId, string $productId, int $quantity): void
+    {
+        $this->withHeaders([
+            'X-Tenant-Id' => $tenantId,
+            'X-User-Id' => fake()->uuid(),
+        ])->postJson('/api/v1/inventory/outputs', [
+            'product_id' => $productId,
+            'type' => 'service_consumption',
+            'quantity' => $quantity,
+            'reason' => 'Consumo em servico',
         ])->assertCreated();
     }
 }

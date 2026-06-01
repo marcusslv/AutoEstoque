@@ -7,6 +7,7 @@ use App\Modules\Inventory\Domain\ValueObjects\MovementQuantity;
 use App\Modules\Inventory\Domain\ValueObjects\MovementReason;
 use App\Modules\Inventory\Domain\ValueObjects\StockEntryType;
 use App\Modules\Inventory\Domain\ValueObjects\StockMovementId;
+use App\Modules\Inventory\Domain\ValueObjects\StockOutputType;
 use App\Modules\Inventory\Domain\ValueObjects\StockProductId;
 use App\Modules\Shared\Domain\Entities\Entity;
 use App\Modules\Tenant\Domain\ValueObjects\TenantId;
@@ -19,7 +20,8 @@ final class StockMovement extends Entity
         private readonly TenantId $tenantId,
         private readonly StockProductId $productId,
         private readonly string $userId,
-        private readonly StockEntryType $type,
+        private readonly string $direction,
+        private readonly StockEntryType|StockOutputType $type,
         private readonly MovementQuantity $quantity,
         private readonly MovementReason $reason,
         private readonly ?string $note,
@@ -53,7 +55,12 @@ final class StockMovement extends Entity
         return $this->userId;
     }
 
-    public function type(): StockEntryType
+    public function direction(): string
+    {
+        return $this->direction;
+    }
+
+    public function type(): StockEntryType|StockOutputType
     {
         return $this->type;
     }

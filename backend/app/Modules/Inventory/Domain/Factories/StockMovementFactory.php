@@ -7,6 +7,7 @@ use App\Modules\Inventory\Domain\ValueObjects\MovementQuantity;
 use App\Modules\Inventory\Domain\ValueObjects\MovementReason;
 use App\Modules\Inventory\Domain\ValueObjects\StockEntryType;
 use App\Modules\Inventory\Domain\ValueObjects\StockMovementId;
+use App\Modules\Inventory\Domain\ValueObjects\StockOutputType;
 use App\Modules\Inventory\Domain\ValueObjects\StockProductId;
 use App\Modules\Tenant\Domain\ValueObjects\TenantId;
 use DateTimeImmutable;
@@ -30,11 +31,38 @@ final class StockMovementFactory
             tenantId: $tenantId,
             productId: $productId,
             userId: $userId,
+            direction: 'entry',
             type: $type,
             quantity: $quantity,
             reason: $reason,
             note: $this->nullableTrim($note),
             unitCostInCents: $unitCostInCents,
+            occurredAt: $occurredAt,
+        );
+    }
+
+    public function createOutput(
+        StockMovementId $id,
+        TenantId $tenantId,
+        StockProductId $productId,
+        string $userId,
+        StockOutputType $type,
+        MovementQuantity $quantity,
+        MovementReason $reason,
+        ?string $note,
+        DateTimeImmutable $occurredAt,
+    ): StockMovement {
+        return new StockMovement(
+            id: $id,
+            tenantId: $tenantId,
+            productId: $productId,
+            userId: $userId,
+            direction: 'output',
+            type: $type,
+            quantity: $quantity,
+            reason: $reason,
+            note: $this->nullableTrim($note),
+            unitCostInCents: null,
             occurredAt: $occurredAt,
         );
     }
