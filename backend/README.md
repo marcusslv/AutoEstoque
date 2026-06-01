@@ -215,6 +215,7 @@ Rotas disponiveis na fundacao tecnica:
 GET /api/v1/health
 GET /api/v1/context/tenant
 POST /api/v1/products
+PATCH /api/v1/products/{product}
 ```
 
 A rota `/api/v1/context/tenant` valida o tenant temporario usando o header:
@@ -249,6 +250,30 @@ Payload:
 }
 ```
 
+Editar produto:
+
+```http
+PATCH /api/v1/products/018f95f2-0f08-7f85-9b31-2d833a1a2f41
+X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f42
+Content-Type: application/json
+```
+
+Payload:
+
+```json
+{
+  "name": "Filtro de oleo atualizado",
+  "sku": "FO-002",
+  "barcode": "7891234567899",
+  "category": "Filtros",
+  "brand": "Mahle",
+  "supplier": "Auto Pecas Central",
+  "minimum_stock": 5,
+  "cost_in_cents": 3190,
+  "currency": "BRL"
+}
+```
+
 ## Estado Atual
 
 O setup inicial do Laravel esta criado e validado com Docker.
@@ -263,6 +288,7 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - Migration da tabela `tenants`.
 - Rotas API em `routes/api.php`.
 - UC04 - Cadastrar produto/peca.
+- UC05 - Editar produto/peca.
 - Migration da tabela `products`.
 - Modulo `Catalog` inicial.
 

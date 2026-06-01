@@ -12,6 +12,7 @@ final class ProductModel extends Model
     protected $table = 'products';
 
     protected $fillable = [
+        'id',
         'tenant_id',
         'name',
         'sku',

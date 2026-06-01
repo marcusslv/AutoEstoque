@@ -2,84 +2,99 @@
 
 namespace Tests\Unit\Catalog;
 
-use App\Modules\Catalog\Application\UseCases\CreateProduct\CreateProductInput;
-use App\Modules\Catalog\Application\UseCases\CreateProduct\CreateProductOutput;
-use App\Modules\Catalog\Application\UseCases\CreateProduct\CreateProductUseCase;
+use App\Modules\Catalog\Application\UseCases\UpdateProduct\UpdateProductInput;
+use App\Modules\Catalog\Application\UseCases\UpdateProduct\UpdateProductOutput;
+use App\Modules\Catalog\Application\UseCases\UpdateProduct\UpdateProductUseCase;
 use App\Modules\Catalog\Domain\Entities\Product;
 use App\Modules\Catalog\Domain\Exceptions\DuplicatedBarcodeException;
 use App\Modules\Catalog\Domain\Exceptions\DuplicatedSkuException;
+use App\Modules\Catalog\Domain\Exceptions\ProductNotFoundException;
 use App\Modules\Catalog\Domain\Factories\ProductFactory;
 use App\Modules\Catalog\Domain\Repositories\ProductRepository;
 use App\Modules\Catalog\Domain\ValueObjects\Barcode;
+use App\Modules\Catalog\Domain\ValueObjects\Money;
 use App\Modules\Catalog\Domain\ValueObjects\ProductId;
 use App\Modules\Catalog\Domain\ValueObjects\Sku;
 use App\Modules\Tenant\Domain\ValueObjects\TenantId;
 use PHPUnit\Framework\TestCase;
 
-class CreateProductUseCaseTest extends TestCase
+class UpdateProductUseCaseTest extends TestCase
 {
-    public function test_it_creates_a_product(): void
+    public function test_it_updates_a_product(): void
     {
-        $repository = new InMemoryProductRepository;
-        $useCase = new CreateProductUseCase($repository, new ProductFactory);
+        $repository = new UpdateProductInMemoryRepository;
+        $repository->save($this->product(id: '018f95f2-0f08-7f85-9b31-2d833a1a2f41'));
 
-        $output = $useCase->execute($this->input());
+        $useCase = new UpdateProductUseCase($repository, new ProductFactory);
 
-        $this->assertInstanceOf(CreateProductOutput::class, $output);
-        $this->assertSame('018f95f2-0f08-7f85-9b31-2d833a1a2f42', $output->tenantId);
-        $this->assertSame('Filtro de oleo', $output->name);
-        $this->assertSame('FO-001', $output->sku);
-        $this->assertSame('7891234567890', $output->barcode);
-        $this->assertSame(3, $output->minimumStock);
-        $this->assertSame(2590, $output->costInCents);
-        $this->assertSame('BRL', $output->currency);
+        $output = $useCase->execute($this->input(
+            productId: '018f95f2-0f08-7f85-9b31-2d833a1a2f41',
+            name: 'Filtro de oleo atualizado',
+            sku: 'FO-002',
+            barcode: '7891234567899',
+        ));
+
+        $this->assertInstanceOf(UpdateProductOutput::class, $output);
+        $this->assertSame('018f95f2-0f08-7f85-9b31-2d833a1a2f41', $output->id);
+        $this->assertSame('Filtro de oleo atualizado', $output->name);
+        $this->assertSame('FO-002', $output->sku);
+        $this->assertSame('7891234567899', $output->barcode);
         $this->assertCount(1, $repository->products);
+        $this->assertSame('FO-002', $repository->products[0]->sku()->value);
+    }
+
+    public function test_it_rejects_missing_product(): void
+    {
+        $useCase = new UpdateProductUseCase(new UpdateProductInMemoryRepository, new ProductFactory);
+
+        $this->expectException(ProductNotFoundException::class);
+
+        $useCase->execute($this->input(productId: '018f95f2-0f08-7f85-9b31-2d833a1a2f41'));
     }
 
     public function test_it_rejects_duplicated_sku(): void
     {
-        $repository = new InMemoryProductRepository;
-        $useCase = new CreateProductUseCase($repository, new ProductFactory);
+        $repository = new UpdateProductInMemoryRepository;
+        $repository->save($this->product(id: '018f95f2-0f08-7f85-9b31-2d833a1a2f41', sku: 'FO-001'));
+        $repository->save($this->product(id: '018f95f2-0f08-7f85-9b31-2d833a1a2f44', sku: 'FA-001', barcode: '7891234567891'));
 
-        $useCase->execute($this->input());
+        $useCase = new UpdateProductUseCase($repository, new ProductFactory);
 
         $this->expectException(DuplicatedSkuException::class);
 
-        $useCase->execute($this->input(barcode: '7891234567891'));
+        $useCase->execute($this->input(
+            productId: '018f95f2-0f08-7f85-9b31-2d833a1a2f41',
+            sku: 'FA-001',
+            barcode: '7891234567892',
+        ));
     }
 
     public function test_it_rejects_duplicated_barcode(): void
     {
-        $repository = new InMemoryProductRepository;
-        $useCase = new CreateProductUseCase($repository, new ProductFactory);
+        $repository = new UpdateProductInMemoryRepository;
+        $repository->save($this->product(id: '018f95f2-0f08-7f85-9b31-2d833a1a2f41', barcode: '7891234567890'));
+        $repository->save($this->product(id: '018f95f2-0f08-7f85-9b31-2d833a1a2f44', sku: 'FA-001', barcode: '7891234567891'));
 
-        $useCase->execute($this->input());
+        $useCase = new UpdateProductUseCase($repository, new ProductFactory);
 
         $this->expectException(DuplicatedBarcodeException::class);
 
-        $useCase->execute($this->input(sku: 'FA-001'));
-    }
-
-    public function test_it_allows_same_sku_in_different_tenants(): void
-    {
-        $repository = new InMemoryProductRepository;
-        $useCase = new CreateProductUseCase($repository, new ProductFactory);
-
-        $useCase->execute($this->input());
         $useCase->execute($this->input(
-            tenantId: '018f95f2-0f08-7f85-9b31-2d833a1a2f43',
+            productId: '018f95f2-0f08-7f85-9b31-2d833a1a2f41',
+            sku: 'FO-002',
+            barcode: '7891234567891',
         ));
-
-        $this->assertCount(2, $repository->products);
     }
 
     private function input(
+        string $productId,
         string $tenantId = '018f95f2-0f08-7f85-9b31-2d833a1a2f42',
         string $name = 'Filtro de oleo',
         string $sku = 'FO-001',
         ?string $barcode = '7891234567890',
-    ): CreateProductInput {
-        return new CreateProductInput(
+    ): UpdateProductInput {
+        return new UpdateProductInput(
+            productId: $productId,
             tenantId: $tenantId,
             name: $name,
             sku: $sku,
@@ -91,9 +106,28 @@ class CreateProductUseCaseTest extends TestCase
             costInCents: 2590,
         );
     }
+
+    private function product(
+        string $id,
+        string $sku = 'FO-001',
+        ?string $barcode = '7891234567890',
+    ): Product {
+        return (new ProductFactory)->create(
+            id: new ProductId($id),
+            tenantId: new TenantId('018f95f2-0f08-7f85-9b31-2d833a1a2f42'),
+            name: 'Filtro de oleo',
+            sku: new Sku($sku),
+            barcode: new Barcode($barcode),
+            category: 'Filtros',
+            brand: 'Mann',
+            supplier: 'Auto Pecas Central',
+            minimumStock: 3,
+            cost: new Money(2590),
+        );
+    }
 }
 
-final class InMemoryProductRepository implements ProductRepository
+final class UpdateProductInMemoryRepository implements ProductRepository
 {
     /**
      * @var array<int, Product>
