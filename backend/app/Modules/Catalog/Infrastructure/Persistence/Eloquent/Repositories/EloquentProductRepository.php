@@ -16,6 +16,34 @@ final class EloquentProductRepository implements ProductRepository
 {
     public function __construct(private readonly ProductFactory $productFactory) {}
 
+    /**
+     * @return array<int, Product>
+     */
+    public function search(TenantId $tenantId, ?string $term = null): array
+    {
+        $query = ProductModel::query()
+            ->where('tenant_id', $tenantId->value)
+            ->orderBy('name');
+
+        if ($term !== null && trim($term) !== '') {
+            $term = mb_strtolower(trim($term));
+            $likeTerm = "%{$term}%";
+
+            $query->where(function ($query) use ($likeTerm): void {
+                $query
+                    ->whereRaw('LOWER(name) LIKE ?', [$likeTerm])
+                    ->orWhereRaw('LOWER(sku) LIKE ?', [$likeTerm])
+                    ->orWhereRaw('LOWER(barcode) LIKE ?', [$likeTerm])
+                    ->orWhereRaw('LOWER(category) LIKE ?', [$likeTerm])
+                    ->orWhereRaw('LOWER(brand) LIKE ?', [$likeTerm]);
+            });
+        }
+
+        return $query->get()
+            ->map(fn (ProductModel $model): Product => $this->toDomain($model))
+            ->all();
+    }
+
     public function findById(TenantId $tenantId, ProductId $productId): ?Product
     {
         $model = ProductModel::query()

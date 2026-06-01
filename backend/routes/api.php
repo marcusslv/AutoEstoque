@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Catalog\Interfaces\Http\Controllers\CreateProductController;
+use App\Modules\Catalog\Interfaces\Http\Controllers\ListStockController;
 use App\Modules\Catalog\Interfaces\Http\Controllers\UpdateProductController;
 use App\Modules\Tenant\Application\TenantContext;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +19,7 @@ Route::prefix('v1')->group(function (): void {
             ];
         });
 
+        Route::get('/stock', ListStockController::class);
         Route::post('/products', CreateProductController::class);
         Route::patch('/products/{product}', UpdateProductController::class);
     });

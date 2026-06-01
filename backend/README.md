@@ -214,6 +214,7 @@ Rotas disponiveis na fundacao tecnica:
 ```text
 GET /api/v1/health
 GET /api/v1/context/tenant
+GET /api/v1/stock
 POST /api/v1/products
 PATCH /api/v1/products/{product}
 ```
@@ -225,6 +226,15 @@ X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f41
 ```
 
 Esse header sera usado enquanto o fluxo completo de autenticacao e multiempresa ainda nao estiver implementado.
+
+Consultar estoque:
+
+```http
+GET /api/v1/stock?search=filtro
+X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f42
+```
+
+Nesta versao, a consulta retorna produtos cadastrados no tenant atual com `current_stock` igual a `0` e `stock_status` igual a `zero`. O saldo real sera integrado ao modulo `Inventory` a partir das movimentacoes de estoque.
 
 Criar produto:
 
@@ -289,6 +299,7 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - Rotas API em `routes/api.php`.
 - UC04 - Cadastrar produto/peca.
 - UC05 - Editar produto/peca.
+- UC06 - Consultar estoque, versao inicial baseada no catalogo.
 - Migration da tabela `products`.
 - Modulo `Catalog` inicial.
 

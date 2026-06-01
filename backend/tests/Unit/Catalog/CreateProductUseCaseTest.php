@@ -100,6 +100,14 @@ final class InMemoryProductRepository implements ProductRepository
      */
     public array $products = [];
 
+    public function search(TenantId $tenantId, ?string $term = null): array
+    {
+        return array_values(array_filter(
+            $this->products,
+            fn (Product $product): bool => $product->tenantId()->equals($tenantId),
+        ));
+    }
+
     public function findById(TenantId $tenantId, ProductId $productId): ?Product
     {
         foreach ($this->products as $product) {

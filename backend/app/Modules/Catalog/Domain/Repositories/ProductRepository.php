@@ -10,6 +10,11 @@ use App\Modules\Tenant\Domain\ValueObjects\TenantId;
 
 interface ProductRepository
 {
+    /**
+     * @return array<int, Product>
+     */
+    public function search(TenantId $tenantId, ?string $term = null): array;
+
     public function findById(TenantId $tenantId, ProductId $productId): ?Product;
 
     public function existsBySku(TenantId $tenantId, Sku $sku): bool;
