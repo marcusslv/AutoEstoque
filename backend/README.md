@@ -215,11 +215,38 @@ Rotas disponiveis na fundacao tecnica:
 GET /api/v1/health
 GET /api/v1/context/tenant
 GET /api/v1/stock
+POST /api/v1/inventory/adjustments
 POST /api/v1/inventory/entries
 POST /api/v1/inventory/outputs
 POST /api/v1/products
 PATCH /api/v1/products/{product}
 ```
+
+### Registrar Ajuste Manual De Estoque
+
+```http
+POST /api/v1/inventory/adjustments
+X-Tenant-Id: {tenant_id}
+X-User-Id: {user_id}
+Content-Type: application/json
+```
+
+```json
+{
+  "product_id": "uuid-do-produto",
+  "direction": "entry",
+  "quantity": 4,
+  "reason": "Conferencia de estoque",
+  "note": "Inventario semanal"
+}
+```
+
+Direcoes aceitas:
+
+- `entry`
+- `output`
+
+O ajuste manual sempre registra o movimento com `type` igual a `manual_adjustment`. Quando a direcao for `output` e o estoque for insuficiente, a API retorna `409 Conflict`.
 
 ### Registrar Entrada De Estoque
 
@@ -387,6 +414,8 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - UC05 - Editar produto/peca.
 - UC06 - Consultar estoque, versao inicial baseada no catalogo.
 - UC07 - Registrar entrada de estoque.
+- UC08 - Registrar saida de estoque.
+- UC09 - Registrar ajuste manual.
 - Migration da tabela `products`.
 - Migrations das tabelas `inventory_items` e `stock_movements`.
 - Modulo `Catalog` inicial.
