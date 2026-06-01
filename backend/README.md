@@ -215,6 +215,7 @@ Rotas disponiveis na fundacao tecnica:
 GET /api/v1/health
 GET /api/v1/context/tenant
 GET /api/v1/stock
+POST /api/v1/inventory/entries
 POST /api/v1/products
 PATCH /api/v1/products/{product}
 ```
@@ -234,7 +235,37 @@ GET /api/v1/stock?search=filtro
 X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f42
 ```
 
-Nesta versao, a consulta retorna produtos cadastrados no tenant atual com `current_stock` igual a `0` e `stock_status` igual a `zero`. O saldo real sera integrado ao modulo `Inventory` a partir das movimentacoes de estoque.
+A consulta retorna produtos cadastrados no tenant atual. Produtos sem movimentacao retornam `current_stock` igual a `0` e `stock_status` igual a `zero`. Produtos com entradas registradas retornam `current_stock` real a partir do modulo `Inventory`.
+
+Registrar entrada de estoque:
+
+```http
+POST /api/v1/inventory/entries
+X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f42
+X-User-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f43
+Content-Type: application/json
+```
+
+Payload:
+
+```json
+{
+  "product_id": "018f95f2-0f08-7f85-9b31-2d833a1a2f41",
+  "type": "purchase",
+  "quantity": 5,
+  "reason": "Compra de reposicao",
+  "note": "Nota 123",
+  "unit_cost_in_cents": 2590
+}
+```
+
+Tipos de entrada aceitos:
+
+```text
+purchase
+manual_adjustment
+return
+```
 
 Criar produto:
 
@@ -300,8 +331,11 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - UC04 - Cadastrar produto/peca.
 - UC05 - Editar produto/peca.
 - UC06 - Consultar estoque, versao inicial baseada no catalogo.
+- UC07 - Registrar entrada de estoque.
 - Migration da tabela `products`.
+- Migrations das tabelas `inventory_items` e `stock_movements`.
 - Modulo `Catalog` inicial.
+- Modulo `Inventory` inicial.
 
 Validacoes ja realizadas:
 

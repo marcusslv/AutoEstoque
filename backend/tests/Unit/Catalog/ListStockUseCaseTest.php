@@ -12,6 +12,11 @@ use App\Modules\Catalog\Domain\ValueObjects\Barcode;
 use App\Modules\Catalog\Domain\ValueObjects\Money;
 use App\Modules\Catalog\Domain\ValueObjects\ProductId;
 use App\Modules\Catalog\Domain\ValueObjects\Sku;
+use App\Modules\Inventory\Domain\Entities\InventoryItem;
+use App\Modules\Inventory\Domain\Repositories\InventoryItemRepository;
+use App\Modules\Inventory\Domain\ValueObjects\InventoryItemId;
+use App\Modules\Inventory\Domain\ValueObjects\StockProductId;
+use App\Modules\Inventory\Domain\ValueObjects\StockQuantity;
 use App\Modules\Tenant\Domain\ValueObjects\TenantId;
 use PHPUnit\Framework\TestCase;
 
@@ -20,12 +25,19 @@ class ListStockUseCaseTest extends TestCase
     public function test_it_lists_stock_products_for_tenant(): void
     {
         $repository = new ListStockInMemoryRepository;
+        $inventoryItems = new ListStockInventoryItemRepository;
         $repository->save($this->product(
             id: '018f95f2-0f08-7f85-9b31-2d833a1a2f41',
             tenantId: '018f95f2-0f08-7f85-9b31-2d833a1a2f42',
             name: 'Filtro de oleo',
             sku: 'FO-001',
             minimumStock: 3,
+        ));
+        $inventoryItems->save(new InventoryItem(
+            id: new InventoryItemId('018f95f2-0f08-7f85-9b31-2d833a1a2f45'),
+            tenantId: new TenantId('018f95f2-0f08-7f85-9b31-2d833a1a2f42'),
+            productId: new StockProductId('018f95f2-0f08-7f85-9b31-2d833a1a2f41'),
+            currentStock: new StockQuantity(7),
         ));
         $repository->save($this->product(
             id: '018f95f2-0f08-7f85-9b31-2d833a1a2f44',
@@ -34,7 +46,7 @@ class ListStockUseCaseTest extends TestCase
             sku: 'PF-001',
         ));
 
-        $output = (new ListStockUseCase($repository))->execute(new ListStockInput(
+        $output = (new ListStockUseCase($repository, $inventoryItems))->execute(new ListStockInput(
             tenantId: '018f95f2-0f08-7f85-9b31-2d833a1a2f42',
         ));
 
@@ -42,8 +54,8 @@ class ListStockUseCaseTest extends TestCase
         $this->assertSame(1, $output->total());
         $this->assertSame('Filtro de oleo', $output->items[0]->name);
         $this->assertSame('FO-001', $output->items[0]->sku);
-        $this->assertSame(0, $output->items[0]->currentStock);
-        $this->assertSame('zero', $output->items[0]->stockStatus);
+        $this->assertSame(7, $output->items[0]->currentStock);
+        $this->assertSame('available', $output->items[0]->stockStatus);
     }
 
     public function test_it_filters_products_by_term(): void
@@ -66,7 +78,7 @@ class ListStockUseCaseTest extends TestCase
             brand: 'Bosch',
         ));
 
-        $output = (new ListStockUseCase($repository))->execute(new ListStockInput(
+        $output = (new ListStockUseCase($repository, new ListStockInventoryItemRepository))->execute(new ListStockInput(
             tenantId: '018f95f2-0f08-7f85-9b31-2d833a1a2f42',
             term: 'bosch',
         ));
@@ -164,5 +176,40 @@ final class ListStockInMemoryRepository implements ProductRepository
     public function update(Product $product): void
     {
         //
+    }
+}
+
+final class ListStockInventoryItemRepository implements InventoryItemRepository
+{
+    /**
+     * @var array<int, InventoryItem>
+     */
+    private array $items = [];
+
+    public function findByProductId(TenantId $tenantId, StockProductId $productId): ?InventoryItem
+    {
+        foreach ($this->items as $item) {
+            if ($item->tenantId()->equals($tenantId) && $item->productId()->value === $productId->value) {
+                return $item;
+            }
+        }
+
+        return null;
+    }
+
+    public function save(InventoryItem $item): void
+    {
+        $this->items[] = $item;
+    }
+
+    public function update(InventoryItem $item): void
+    {
+        foreach ($this->items as $index => $currentItem) {
+            if ($currentItem->id()->value === $item->id()->value) {
+                $this->items[$index] = $item;
+
+                return;
+            }
+        }
     }
 }
