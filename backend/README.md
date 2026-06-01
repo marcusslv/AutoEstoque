@@ -168,6 +168,8 @@ O backend sera organizado como um monolito modular usando Clean Architecture e D
 Modulos planejados:
 
 - `Identity`
+- `Tenant`
+- `Shared`
 - `Catalog`
 - `Inventory`
 - `Workshop`
@@ -178,6 +180,14 @@ Estrutura alvo:
 ```text
 app/
   Modules/
+    Shared/
+      Application/
+      Interfaces/
+    Tenant/
+      Domain/
+      Application/
+      Infrastructure/
+      Interfaces/
     Catalog/
       Domain/
       Application/
@@ -194,17 +204,47 @@ Mais detalhes estao na documentacao da raiz:
 ```text
 docs/arquitetura/analise-clean-architecture-ddd.md
 docs/arquitetura/setup-backend-docker.md
+docs/arquitetura/sequencia-implementacao-modulos-use-cases.md
 ```
+
+## API Inicial
+
+Rotas disponiveis na fundacao tecnica:
+
+```text
+GET /api/v1/health
+GET /api/v1/context/tenant
+```
+
+A rota `/api/v1/context/tenant` valida o tenant temporario usando o header:
+
+```http
+X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f41
+```
+
+Esse header sera usado enquanto o fluxo completo de autenticacao e multiempresa ainda nao estiver implementado.
 
 ## Estado Atual
 
 O setup inicial do Laravel esta criado e validado com Docker.
+
+A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
+
+- Estrutura inicial em `app/Modules`.
+- Contratos compartilhados para `InputDto`, `OutputDto`, `UseCase` e `JsonPresenter`.
+- Modulo `Tenant` inicial.
+- `TenantContext` resolvido por middleware.
+- Middleware `tenant` usando o header `X-Tenant-Id`.
+- Migration da tabela `tenants`.
+- Rotas API em `routes/api.php`.
 
 Validacoes ja realizadas:
 
 ```bash
 docker compose exec backend php artisan --version
 docker compose exec backend php artisan migrate:status
+docker compose exec backend php artisan route:list --path=api
+docker compose exec backend php artisan test
 ```
 
 Resultado esperado:
