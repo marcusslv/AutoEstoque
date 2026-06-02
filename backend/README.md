@@ -232,6 +232,7 @@ Rotas disponiveis na fundacao tecnica:
 ```text
 GET /api/v1/health
 POST /api/v1/auth/login
+POST /api/v1/auth/logout
 POST /api/v1/auth/forgot-password
 POST /api/v1/auth/reset-password
 GET /api/v1/context/tenant
@@ -250,6 +251,7 @@ POST /api/v1/inventory/entries
 POST /api/v1/inventory/outputs
 POST /api/v1/products
 PATCH /api/v1/products/{product}
+GET /api/v1/service-orders
 POST /api/v1/service-orders
 GET /api/v1/service-orders/{serviceOrder}
 PATCH /api/v1/service-orders/{serviceOrder}/finish
@@ -296,6 +298,15 @@ Resposta:
 ```
 
 Nesta versao, o token e persistido em `user_access_tokens` usando hash SHA-256. As rotas protegidas usam `Authorization: Bearer {access_token}`; o tenant e o usuario atual sao resolvidos a partir do token autenticado.
+
+### Encerrar Sessao
+
+```http
+POST /api/v1/auth/logout
+Authorization: Bearer {access_token}
+```
+
+Revoga o token atual. Depois do logout, o mesmo token nao pode mais acessar rotas protegidas.
 
 ### Recuperar Senha
 
@@ -687,6 +698,21 @@ Payload:
 ```
 
 A ordem e criada com status inicial `open`. O veiculo deve pertencer ao tenant atual; caso contrario, a API retorna `404 Not Found`.
+
+### Listar Ordens De Servico
+
+```http
+GET /api/v1/service-orders?status=open&search=ABC1D23&limit=50
+Authorization: Bearer {access_token}
+```
+
+Filtros aceitos:
+
+- `status`: `open` ou `finished`.
+- `search`: busca por cliente, servico, placa ou proprietario.
+- `opened_from`: data inicial de abertura.
+- `opened_to`: data final de abertura.
+- `limit`: entre `1` e `100`.
 
 ### Detalhar Ordem De Servico
 

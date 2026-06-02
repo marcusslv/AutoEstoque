@@ -9,6 +9,7 @@ use App\Modules\Identity\Interfaces\Http\Controllers\AuthenticateUserController;
 use App\Modules\Identity\Interfaces\Http\Controllers\CreateWorkshopUserController;
 use App\Modules\Identity\Interfaces\Http\Controllers\DeactivateWorkshopUserController;
 use App\Modules\Identity\Interfaces\Http\Controllers\ListWorkshopUsersController;
+use App\Modules\Identity\Interfaces\Http\Controllers\LogoutUserController;
 use App\Modules\Identity\Interfaces\Http\Controllers\RequestPasswordResetController;
 use App\Modules\Identity\Interfaces\Http\Controllers\ResetPasswordController;
 use App\Modules\Identity\Interfaces\Http\Controllers\UpdateWorkshopUserController;
@@ -23,6 +24,7 @@ use App\Modules\Workshop\Interfaces\Http\Controllers\AddPartToServiceOrderContro
 use App\Modules\Workshop\Interfaces\Http\Controllers\CreateServiceOrderController;
 use App\Modules\Workshop\Interfaces\Http\Controllers\CreateVehicleController;
 use App\Modules\Workshop\Interfaces\Http\Controllers\FinishServiceOrderController;
+use App\Modules\Workshop\Interfaces\Http\Controllers\ListServiceOrdersController;
 use App\Modules\Workshop\Interfaces\Http\Controllers\ListVehiclesController;
 use App\Modules\Workshop\Interfaces\Http\Controllers\ShowServiceOrderController;
 use Illuminate\Support\Facades\Route;
@@ -38,6 +40,8 @@ Route::prefix('v1')->group(function (): void {
     Route::post('/auth/reset-password', ResetPasswordController::class);
 
     Route::middleware('auth.api')->group(function (): void {
+        Route::post('/auth/logout', LogoutUserController::class);
+
         Route::get('/context/tenant', function (TenantContext $tenantContext) {
             return [
                 'tenant_id' => $tenantContext->id()->value,
@@ -59,6 +63,7 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/inventory/outputs', RegisterStockOutputController::class);
         Route::post('/products', CreateProductController::class);
         Route::patch('/products/{product}', UpdateProductController::class);
+        Route::get('/service-orders', ListServiceOrdersController::class);
         Route::post('/service-orders', CreateServiceOrderController::class);
         Route::get('/service-orders/{serviceOrder}', ShowServiceOrderController::class);
         Route::patch('/service-orders/{serviceOrder}/finish', FinishServiceOrderController::class);
