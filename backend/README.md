@@ -235,6 +235,10 @@ POST /api/v1/auth/login
 POST /api/v1/auth/forgot-password
 POST /api/v1/auth/reset-password
 GET /api/v1/context/tenant
+GET /api/v1/users
+POST /api/v1/users
+PATCH /api/v1/users/{user}
+PATCH /api/v1/users/{user}/deactivate
 GET /api/v1/dashboard
 GET /api/v1/dashboard/most-consumed-products
 GET /api/v1/stock
@@ -319,6 +323,51 @@ Content-Type: application/json
   "password_confirmation": "new-secret"
 }
 ```
+
+### Gerenciar Usuarios Da Oficina
+
+Listar usuarios:
+
+```http
+GET /api/v1/users
+X-Tenant-Id: {tenant_id}
+```
+
+Criar usuario:
+
+```http
+POST /api/v1/users
+X-Tenant-Id: {tenant_id}
+Content-Type: application/json
+```
+
+```json
+{
+  "name": "Mecanico Oficina",
+  "email": "mecanico@oficina.com",
+  "password": "secret123",
+  "role": "mechanic",
+  "status": "active"
+}
+```
+
+Editar usuario:
+
+```http
+PATCH /api/v1/users/{user}
+X-Tenant-Id: {tenant_id}
+```
+
+Inativar usuario:
+
+```http
+PATCH /api/v1/users/{user}/deactivate
+X-Tenant-Id: {tenant_id}
+```
+
+Roles aceitos: `owner`, `manager`, `admin` e `mechanic`.
+
+Nesta versao, o limite do plano Starter e aplicado como ate 3 usuarios ativos por tenant.
 
 ### Visualizar Dashboard
 
@@ -607,6 +656,7 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - UC18 - Consultar produtos mais consumidos.
 - UC01 - Autenticar usuario, versao inicial com token de API.
 - UC02 - Recuperar senha.
+- UC03 - Gerenciar usuarios da oficina.
 - Migration de campos de identidade em `users`.
 - Migration da tabela `user_access_tokens`.
 - Migration da tabela `products`.

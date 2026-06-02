@@ -6,8 +6,12 @@ use App\Modules\Catalog\Interfaces\Http\Controllers\UpdateProductController;
 use App\Modules\Dashboard\Interfaces\Http\Controllers\ListMostConsumedProductsController;
 use App\Modules\Dashboard\Interfaces\Http\Controllers\ViewDashboardController;
 use App\Modules\Identity\Interfaces\Http\Controllers\AuthenticateUserController;
+use App\Modules\Identity\Interfaces\Http\Controllers\CreateWorkshopUserController;
+use App\Modules\Identity\Interfaces\Http\Controllers\DeactivateWorkshopUserController;
+use App\Modules\Identity\Interfaces\Http\Controllers\ListWorkshopUsersController;
 use App\Modules\Identity\Interfaces\Http\Controllers\RequestPasswordResetController;
 use App\Modules\Identity\Interfaces\Http\Controllers\ResetPasswordController;
+use App\Modules\Identity\Interfaces\Http\Controllers\UpdateWorkshopUserController;
 use App\Modules\Inventory\Interfaces\Http\Controllers\GenerateMinimumStockAlertsController;
 use App\Modules\Inventory\Interfaces\Http\Controllers\GenerateZeroStockAlertsController;
 use App\Modules\Inventory\Interfaces\Http\Controllers\ListStockMovementHistoryController;
@@ -34,6 +38,10 @@ Route::prefix('v1')->group(function (): void {
             ];
         });
 
+        Route::get('/users', ListWorkshopUsersController::class);
+        Route::post('/users', CreateWorkshopUserController::class);
+        Route::patch('/users/{user}', UpdateWorkshopUserController::class);
+        Route::patch('/users/{user}/deactivate', DeactivateWorkshopUserController::class);
         Route::get('/dashboard', ViewDashboardController::class);
         Route::get('/dashboard/most-consumed-products', ListMostConsumedProductsController::class);
         Route::get('/stock', ListStockController::class);
