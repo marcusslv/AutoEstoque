@@ -9,6 +9,7 @@ use App\Modules\Identity\Application\UseCases\ManageWorkshopUsers\Dtos\UpdateWor
 use App\Modules\Identity\Application\UseCases\ManageWorkshopUsers\Dtos\WorkshopUserOutput;
 use App\Modules\Tenant\Domain\ValueObjects\TenantId;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 final class EloquentWorkshopUserRepository implements WorkshopUserRepository
 {
@@ -51,6 +52,7 @@ final class EloquentWorkshopUserRepository implements WorkshopUserRepository
     {
         $user = User::query()->create([
             'tenant_id' => $input->tenantId,
+            'public_id' => (string) Str::uuid(),
             'name' => trim($input->name),
             'email' => mb_strtolower(trim($input->email)),
             'password' => Hash::make($input->password),

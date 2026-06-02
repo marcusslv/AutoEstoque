@@ -21,7 +21,7 @@ class ListStockMovementHistoryTest extends TestCase
         $this->registerEntry($tenantId, fake()->uuid(), $productId, 5);
         $this->registerEntry($otherTenantId, fake()->uuid(), $otherProductId, 3);
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->getJson('/api/v1/inventory/movements');
 
         $response->assertOk()
@@ -45,7 +45,7 @@ class ListStockMovementHistoryTest extends TestCase
         $this->registerOutput($tenantId, $userId, $firstProductId, 2);
         $this->registerEntry($tenantId, fake()->uuid(), $secondProductId, 1);
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->getJson('/api/v1/inventory/movements?product_id='.$firstProductId.'&direction=output&type=service_consumption&user_id='.$userId);
 
         $response->assertOk()
@@ -66,7 +66,7 @@ class ListStockMovementHistoryTest extends TestCase
         $this->registerEntry($tenantId, $userId, $productId, 5);
 
         $today = now()->toDateString();
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->getJson('/api/v1/inventory/movements?occurred_from='.$today.'&occurred_to='.$today);
 
         $response->assertOk()
@@ -81,7 +81,7 @@ class ListStockMovementHistoryTest extends TestCase
 
         $this->registerEntry($tenantId, fake()->uuid(), $productId, 5);
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->getJson('/api/v1/inventory/movements?direction=output');
 
         $response->assertOk()
@@ -93,7 +93,7 @@ class ListStockMovementHistoryTest extends TestCase
     {
         $tenantId = $this->createTenant();
 
-        $this->withHeader('X-Tenant-Id', $tenantId)
+        $this->withHeaders($this->authHeaders($tenantId))
             ->getJson('/api/v1/inventory/movements?product_id=invalid&direction=invalid&user_id=invalid&occurred_from=2026-06-02&occurred_to=2026-06-01&limit=101')
             ->assertUnprocessable()
             ->assertJsonValidationErrors([
@@ -107,10 +107,7 @@ class ListStockMovementHistoryTest extends TestCase
 
     private function registerEntry(string $tenantId, string $userId, string $productId, int $quantity): TestResponse
     {
-        return $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => $userId,
-        ])->postJson('/api/v1/inventory/entries', [
+        return $this->withHeaders($this->authHeaders($tenantId, $userId))->postJson('/api/v1/inventory/entries', [
             'product_id' => $productId,
             'type' => 'purchase',
             'quantity' => $quantity,
@@ -120,10 +117,7 @@ class ListStockMovementHistoryTest extends TestCase
 
     private function registerOutput(string $tenantId, string $userId, string $productId, int $quantity): TestResponse
     {
-        return $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => $userId,
-        ])->postJson('/api/v1/inventory/outputs', [
+        return $this->withHeaders($this->authHeaders($tenantId, $userId))->postJson('/api/v1/inventory/outputs', [
             'product_id' => $productId,
             'type' => 'service_consumption',
             'quantity' => $quantity,
@@ -152,7 +146,7 @@ class ListStockMovementHistoryTest extends TestCase
         string $sku,
         ?string $barcode = '7891234567890',
     ): string {
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/products', [
                 'name' => $name,
                 'sku' => $sku,

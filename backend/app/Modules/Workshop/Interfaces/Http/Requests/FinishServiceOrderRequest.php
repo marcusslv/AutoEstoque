@@ -16,18 +16,6 @@ final class FinishServiceOrderRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'X-User-Id' => ['required', 'uuid'],
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function validationData(): array
-    {
-        return [
-            'X-User-Id' => $this->header('X-User-Id'),
-        ];
+        return [];
     }
 }

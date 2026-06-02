@@ -31,7 +31,7 @@ final class EloquentCredentialsVerifier implements CredentialsVerifier
         }
 
         return new AuthenticatedIdentity(
-            userId: (string) $user->id,
+            userId: (string) ($user->public_id ?? $user->id),
             name: (string) $user->name,
             email: (string) $user->email,
             tenantId: (string) $user->tenant_id,

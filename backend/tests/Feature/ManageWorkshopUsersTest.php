@@ -17,7 +17,7 @@ class ManageWorkshopUsersTest extends TestCase
         $otherTenantId = $this->createTenant('Oficina B');
         $this->createUser($otherTenantId, email: 'other@oficina.com');
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/users', [
                 'name' => 'Mecanico Oficina',
                 'email' => 'mecanico@oficina.com',
@@ -40,10 +40,10 @@ class ManageWorkshopUsersTest extends TestCase
             'status' => 'active',
         ]);
 
-        $this->withHeader('X-Tenant-Id', $tenantId)
+        $this->withHeaders($this->authHeaders($tenantId))
             ->getJson('/api/v1/users')
             ->assertOk()
-            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('meta.total', 2)
             ->assertJsonPath('data.0.email', 'mecanico@oficina.com');
     }
 
@@ -52,7 +52,7 @@ class ManageWorkshopUsersTest extends TestCase
         $tenantId = $this->createTenant();
         $userId = $this->createUser($tenantId, email: 'admin@oficina.com');
 
-        $this->withHeader('X-Tenant-Id', $tenantId)
+        $this->withHeaders($this->authHeaders($tenantId))
             ->patchJson('/api/v1/users/'.$userId, [
                 'name' => 'Gerente Oficina',
                 'role' => 'manager',
@@ -61,7 +61,7 @@ class ManageWorkshopUsersTest extends TestCase
             ->assertJsonPath('data.name', 'Gerente Oficina')
             ->assertJsonPath('data.role', 'manager');
 
-        $this->withHeader('X-Tenant-Id', $tenantId)
+        $this->withHeaders($this->authHeaders($tenantId))
             ->patchJson('/api/v1/users/'.$userId.'/deactivate')
             ->assertOk()
             ->assertJsonPath('data.status', 'inactive');
@@ -77,7 +77,7 @@ class ManageWorkshopUsersTest extends TestCase
         $tenantId = $this->createTenant();
         $this->createUser($tenantId, email: 'admin@oficina.com');
 
-        $this->withHeader('X-Tenant-Id', $tenantId)
+        $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/users', [
                 'name' => 'Admin Duplicado',
                 'email' => 'admin@oficina.com',
@@ -96,7 +96,7 @@ class ManageWorkshopUsersTest extends TestCase
         $this->createUser($tenantId, email: 'two@oficina.com');
         $this->createUser($tenantId, email: 'three@oficina.com');
 
-        $this->withHeader('X-Tenant-Id', $tenantId)
+        $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/users', [
                 'name' => 'Quarto Usuario',
                 'email' => 'four@oficina.com',
@@ -114,7 +114,7 @@ class ManageWorkshopUsersTest extends TestCase
         $otherTenantId = $this->createTenant('Oficina B');
         $otherUserId = $this->createUser($otherTenantId, email: 'other@oficina.com');
 
-        $this->withHeader('X-Tenant-Id', $tenantId)
+        $this->withHeaders($this->authHeaders($tenantId))
             ->patchJson('/api/v1/users/'.$otherUserId, [
                 'name' => 'Outro',
                 'role' => 'admin',
@@ -129,7 +129,7 @@ class ManageWorkshopUsersTest extends TestCase
     {
         $tenantId = $this->createTenant();
 
-        $this->withHeader('X-Tenant-Id', $tenantId)
+        $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/users', [
                 'name' => '',
                 'email' => 'invalid',

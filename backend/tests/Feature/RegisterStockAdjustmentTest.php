@@ -17,10 +17,7 @@ class RegisterStockAdjustmentTest extends TestCase
         $productId = $this->createProduct($tenantId);
         $userId = fake()->uuid();
 
-        $response = $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => $userId,
-        ])->postJson('/api/v1/inventory/adjustments', [
+        $response = $this->withHeaders($this->authHeaders($tenantId, $userId))->postJson('/api/v1/inventory/adjustments', [
             'product_id' => $productId,
             'direction' => 'entry',
             'quantity' => 4,
@@ -63,10 +60,7 @@ class RegisterStockAdjustmentTest extends TestCase
 
         $this->registerEntry($tenantId, $userId, $productId, 5);
 
-        $response = $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => $userId,
-        ])->postJson('/api/v1/inventory/adjustments', [
+        $response = $this->withHeaders($this->authHeaders($tenantId, $userId))->postJson('/api/v1/inventory/adjustments', [
             'product_id' => $productId,
             'direction' => 'output',
             'quantity' => 2,
@@ -104,10 +98,7 @@ class RegisterStockAdjustmentTest extends TestCase
 
         $this->registerEntry($tenantId, $userId, $productId, 1);
 
-        $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => $userId,
-        ])->postJson('/api/v1/inventory/adjustments', [
+        $this->withHeaders($this->authHeaders($tenantId, $userId))->postJson('/api/v1/inventory/adjustments', [
             'product_id' => $productId,
             'direction' => 'output',
             'quantity' => 2,
@@ -128,10 +119,7 @@ class RegisterStockAdjustmentTest extends TestCase
     {
         $tenantId = $this->createTenant();
 
-        $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => fake()->uuid(),
-        ])->postJson('/api/v1/inventory/adjustments', [
+        $this->withHeaders($this->authHeaders($tenantId, fake()->uuid()))->postJson('/api/v1/inventory/adjustments', [
             'product_id' => fake()->uuid(),
             'direction' => 'entry',
             'quantity' => 1,
@@ -146,7 +134,7 @@ class RegisterStockAdjustmentTest extends TestCase
     {
         $tenantId = $this->createTenant();
 
-        $this->withHeader('X-Tenant-Id', $tenantId)
+        $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/inventory/adjustments', [
                 'product_id' => 'invalid',
                 'direction' => 'invalid',
@@ -154,7 +142,6 @@ class RegisterStockAdjustmentTest extends TestCase
                 'reason' => '',
             ])->assertUnprocessable()
             ->assertJsonValidationErrors([
-                'X-User-Id',
                 'product_id',
                 'direction',
                 'quantity',
@@ -164,10 +151,7 @@ class RegisterStockAdjustmentTest extends TestCase
 
     private function registerEntry(string $tenantId, string $userId, string $productId, int $quantity): TestResponse
     {
-        return $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => $userId,
-        ])->postJson('/api/v1/inventory/entries', [
+        return $this->withHeaders($this->authHeaders($tenantId, $userId))->postJson('/api/v1/inventory/entries', [
             'product_id' => $productId,
             'type' => 'purchase',
             'quantity' => $quantity,
@@ -192,7 +176,7 @@ class RegisterStockAdjustmentTest extends TestCase
 
     private function createProduct(string $tenantId): string
     {
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/products', [
                 'name' => 'Filtro de oleo',
                 'sku' => 'FO-001',

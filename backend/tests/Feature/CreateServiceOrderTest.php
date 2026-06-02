@@ -16,10 +16,7 @@ class CreateServiceOrderTest extends TestCase
         $vehicleId = $this->createVehicle($tenantId);
         $userId = fake()->uuid();
 
-        $response = $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => $userId,
-        ])->postJson('/api/v1/service-orders', [
+        $response = $this->withHeaders($this->authHeaders($tenantId, $userId))->postJson('/api/v1/service-orders', [
             'vehicle_id' => $vehicleId,
             'customer_name' => 'Joao Silva',
             'services_description' => 'Troca de oleo e filtros',
@@ -50,10 +47,7 @@ class CreateServiceOrderTest extends TestCase
     {
         $tenantId = $this->createTenant();
 
-        $response = $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => fake()->uuid(),
-        ])->postJson('/api/v1/service-orders', $this->payload([
+        $response = $this->withHeaders($this->authHeaders($tenantId, fake()->uuid()))->postJson('/api/v1/service-orders', $this->payload([
             'vehicle_id' => fake()->uuid(),
         ]));
 
@@ -69,10 +63,7 @@ class CreateServiceOrderTest extends TestCase
         $secondTenantId = $this->createTenant('Oficina B');
         $vehicleId = $this->createVehicle($firstTenantId);
 
-        $response = $this->withHeaders([
-            'X-Tenant-Id' => $secondTenantId,
-            'X-User-Id' => fake()->uuid(),
-        ])->postJson('/api/v1/service-orders', $this->payload([
+        $response = $this->withHeaders($this->authHeaders($secondTenantId, fake()->uuid()))->postJson('/api/v1/service-orders', $this->payload([
             'vehicle_id' => $vehicleId,
         ]));
 
@@ -86,7 +77,7 @@ class CreateServiceOrderTest extends TestCase
     {
         $tenantId = $this->createTenant();
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/service-orders', [
                 'vehicle_id' => 'invalid',
                 'customer_name' => '',
@@ -95,7 +86,6 @@ class CreateServiceOrderTest extends TestCase
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors([
-                'X-User-Id',
                 'vehicle_id',
                 'customer_name',
                 'services_description',

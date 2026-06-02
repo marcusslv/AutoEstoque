@@ -14,7 +14,7 @@ class CreateProductTest extends TestCase
     {
         $tenantId = $this->createTenant();
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/products', [
                 'name' => 'Filtro de oleo',
                 'sku' => ' fo-001 ',
@@ -50,11 +50,11 @@ class CreateProductTest extends TestCase
     {
         $tenantId = $this->createTenant();
 
-        $this->withHeader('X-Tenant-Id', $tenantId)
+        $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/products', $this->payload(['sku' => 'FO-001']))
             ->assertCreated();
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/products', $this->payload([
                 'name' => 'Filtro de ar',
                 'sku' => 'fo-001',
@@ -72,11 +72,11 @@ class CreateProductTest extends TestCase
         $firstTenantId = $this->createTenant('Oficina A');
         $secondTenantId = $this->createTenant('Oficina B');
 
-        $this->withHeader('X-Tenant-Id', $firstTenantId)
+        $this->withHeaders($this->authHeaders($firstTenantId))
             ->postJson('/api/v1/products', $this->payload(['sku' => 'FO-001']))
             ->assertCreated();
 
-        $this->withHeader('X-Tenant-Id', $secondTenantId)
+        $this->withHeaders($this->authHeaders($secondTenantId))
             ->postJson('/api/v1/products', $this->payload(['sku' => 'FO-001']))
             ->assertCreated();
     }
@@ -85,14 +85,14 @@ class CreateProductTest extends TestCase
     {
         $tenantId = $this->createTenant();
 
-        $this->withHeader('X-Tenant-Id', $tenantId)
+        $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/products', $this->payload([
                 'sku' => 'FO-001',
                 'barcode' => '7890000000001',
             ]))
             ->assertCreated();
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/products', $this->payload([
                 'name' => 'Filtro de ar',
                 'sku' => 'FA-001',
@@ -109,7 +109,7 @@ class CreateProductTest extends TestCase
     {
         $tenantId = $this->createTenant();
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/products', [
                 'name' => '',
                 'sku' => '',

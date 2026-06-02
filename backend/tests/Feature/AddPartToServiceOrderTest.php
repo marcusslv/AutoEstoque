@@ -18,10 +18,7 @@ class AddPartToServiceOrderTest extends TestCase
         $this->createInventoryItem($tenantId, $productId, currentStock: 5);
         $userId = fake()->uuid();
 
-        $response = $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => $userId,
-        ])->postJson("/api/v1/service-orders/{$serviceOrderId}/parts", [
+        $response = $this->withHeaders($this->authHeaders($tenantId, $userId))->postJson("/api/v1/service-orders/{$serviceOrderId}/parts", [
             'product_id' => $productId,
             'quantity' => 2,
         ]);
@@ -54,10 +51,7 @@ class AddPartToServiceOrderTest extends TestCase
         $productId = $this->createProduct($tenantId);
         $this->createInventoryItem($tenantId, $productId, currentStock: 5);
 
-        $response = $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => fake()->uuid(),
-        ])->postJson('/api/v1/service-orders/'.fake()->uuid().'/parts', [
+        $response = $this->withHeaders($this->authHeaders($tenantId, fake()->uuid()))->postJson('/api/v1/service-orders/'.fake()->uuid().'/parts', [
             'product_id' => $productId,
             'quantity' => 1,
         ]);
@@ -75,10 +69,7 @@ class AddPartToServiceOrderTest extends TestCase
         $productId = $this->createProduct($tenantId);
         $this->createInventoryItem($tenantId, $productId, currentStock: 5);
 
-        $response = $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => fake()->uuid(),
-        ])->postJson("/api/v1/service-orders/{$serviceOrderId}/parts", [
+        $response = $this->withHeaders($this->authHeaders($tenantId, fake()->uuid()))->postJson("/api/v1/service-orders/{$serviceOrderId}/parts", [
             'product_id' => $productId,
             'quantity' => 1,
         ]);
@@ -94,10 +85,7 @@ class AddPartToServiceOrderTest extends TestCase
         $tenantId = $this->createTenant();
         $serviceOrderId = $this->createServiceOrder($tenantId);
 
-        $response = $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => fake()->uuid(),
-        ])->postJson("/api/v1/service-orders/{$serviceOrderId}/parts", [
+        $response = $this->withHeaders($this->authHeaders($tenantId, fake()->uuid()))->postJson("/api/v1/service-orders/{$serviceOrderId}/parts", [
             'product_id' => fake()->uuid(),
             'quantity' => 1,
         ]);
@@ -115,10 +103,7 @@ class AddPartToServiceOrderTest extends TestCase
         $productId = $this->createProduct($tenantId);
         $this->createInventoryItem($tenantId, $productId, currentStock: 1);
 
-        $response = $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => fake()->uuid(),
-        ])->postJson("/api/v1/service-orders/{$serviceOrderId}/parts", [
+        $response = $this->withHeaders($this->authHeaders($tenantId, fake()->uuid()))->postJson("/api/v1/service-orders/{$serviceOrderId}/parts", [
             'product_id' => $productId,
             'quantity' => 2,
         ]);
@@ -134,7 +119,7 @@ class AddPartToServiceOrderTest extends TestCase
         $tenantId = $this->createTenant();
         $serviceOrderId = $this->createServiceOrder($tenantId);
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->postJson("/api/v1/service-orders/{$serviceOrderId}/parts", [
                 'product_id' => 'invalid',
                 'quantity' => 0,
@@ -142,7 +127,6 @@ class AddPartToServiceOrderTest extends TestCase
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors([
-                'X-User-Id',
                 'product_id',
                 'quantity',
             ]);

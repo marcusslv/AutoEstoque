@@ -293,7 +293,7 @@ Resposta:
 }
 ```
 
-Nesta versao, o token e persistido em `user_access_tokens` usando hash SHA-256. As rotas existentes ainda usam `X-Tenant-Id` ate a autenticacao ser integrada ao middleware de contexto.
+Nesta versao, o token e persistido em `user_access_tokens` usando hash SHA-256. As rotas protegidas usam `Authorization: Bearer {access_token}`; o tenant e o usuario atual sao resolvidos a partir do token autenticado.
 
 ### Recuperar Senha
 
@@ -334,14 +334,14 @@ Listar usuarios:
 
 ```http
 GET /api/v1/users
-X-Tenant-Id: {tenant_id}
+Authorization: Bearer {access_token}
 ```
 
 Criar usuario:
 
 ```http
 POST /api/v1/users
-X-Tenant-Id: {tenant_id}
+Authorization: Bearer {access_token}
 Content-Type: application/json
 ```
 
@@ -359,14 +359,14 @@ Editar usuario:
 
 ```http
 PATCH /api/v1/users/{user}
-X-Tenant-Id: {tenant_id}
+Authorization: Bearer {access_token}
 ```
 
 Inativar usuario:
 
 ```http
 PATCH /api/v1/users/{user}/deactivate
-X-Tenant-Id: {tenant_id}
+Authorization: Bearer {access_token}
 ```
 
 Roles aceitos: `owner`, `manager`, `admin` e `mechanic`.
@@ -377,7 +377,7 @@ Nesta versao, o limite do plano Starter e aplicado como ate 3 usuarios ativos po
 
 ```http
 GET /api/v1/dashboard
-X-Tenant-Id: {tenant_id}
+Authorization: Bearer {access_token}
 ```
 
 Filtros aceitos:
@@ -398,7 +398,7 @@ Indicadores retornados:
 
 ```http
 GET /api/v1/dashboard/most-consumed-products
-X-Tenant-Id: {tenant_id}
+Authorization: Bearer {access_token}
 ```
 
 Filtros aceitos:
@@ -413,7 +413,7 @@ O ranking considera apenas movimentacoes com `direction` igual a `output`.
 
 ```http
 GET /api/v1/inventory/alerts/minimum-stock
-X-Tenant-Id: {tenant_id}
+Authorization: Bearer {access_token}
 ```
 
 Filtros aceitos:
@@ -426,7 +426,7 @@ Nesta versao, os alertas sao calculados sob demanda a partir de `products.minimu
 
 ```http
 GET /api/v1/inventory/alerts/zero-stock
-X-Tenant-Id: {tenant_id}
+Authorization: Bearer {access_token}
 ```
 
 Filtros aceitos:
@@ -439,7 +439,7 @@ Nesta versao, os alertas sao calculados sob demanda. Produtos sem movimentacao t
 
 ```http
 GET /api/v1/inventory/movements
-X-Tenant-Id: {tenant_id}
+Authorization: Bearer {access_token}
 ```
 
 Filtros aceitos:
@@ -456,15 +456,14 @@ Exemplo:
 
 ```http
 GET /api/v1/inventory/movements?direction=output&type=service_consumption&limit=20
-X-Tenant-Id: {tenant_id}
+Authorization: Bearer {access_token}
 ```
 
 ### Registrar Ajuste Manual De Estoque
 
 ```http
 POST /api/v1/inventory/adjustments
-X-Tenant-Id: {tenant_id}
-X-User-Id: {user_id}
+Authorization: Bearer {access_token}
 Content-Type: application/json
 ```
 
@@ -489,8 +488,7 @@ O ajuste manual sempre registra o movimento com `type` igual a `manual_adjustmen
 
 ```http
 POST /api/v1/inventory/entries
-X-Tenant-Id: {tenant_id}
-X-User-Id: {user_id}
+Authorization: Bearer {access_token}
 Content-Type: application/json
 ```
 
@@ -515,8 +513,7 @@ Tipos de entrada aceitos:
 
 ```http
 POST /api/v1/inventory/outputs
-X-Tenant-Id: {tenant_id}
-X-User-Id: {user_id}
+Authorization: Bearer {access_token}
 Content-Type: application/json
 ```
 
@@ -539,19 +536,19 @@ Tipos de saida aceitos:
 
 Quando o estoque for insuficiente, a API retorna `409 Conflict`.
 
-A rota `/api/v1/context/tenant` valida o tenant temporario usando o header:
+A rota `/api/v1/context/tenant` retorna o tenant resolvido a partir do usuario autenticado:
 
 ```http
-X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f41
+Authorization: Bearer {access_token}
 ```
 
-Esse header sera usado enquanto o fluxo completo de autenticacao e multiempresa ainda nao estiver implementado.
+Todas as rotas protegidas resolvem tenant e usuario atual a partir do token Bearer.
 
 Consultar estoque:
 
 ```http
 GET /api/v1/stock?search=filtro
-X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f42
+Authorization: Bearer {access_token}
 ```
 
 A consulta retorna produtos cadastrados no tenant atual. Produtos sem movimentacao retornam `current_stock` igual a `0` e `stock_status` igual a `zero`. Produtos com entradas registradas retornam `current_stock` real a partir do modulo `Inventory`.
@@ -560,8 +557,7 @@ Registrar entrada de estoque:
 
 ```http
 POST /api/v1/inventory/entries
-X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f42
-X-User-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f43
+Authorization: Bearer {access_token}
 Content-Type: application/json
 ```
 
@@ -590,7 +586,7 @@ Criar produto:
 
 ```http
 POST /api/v1/products
-X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f41
+Authorization: Bearer {access_token}
 Content-Type: application/json
 ```
 
@@ -614,7 +610,7 @@ Editar produto:
 
 ```http
 PATCH /api/v1/products/018f95f2-0f08-7f85-9b31-2d833a1a2f41
-X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f42
+Authorization: Bearer {access_token}
 Content-Type: application/json
 ```
 
@@ -638,7 +634,7 @@ Payload:
 
 ```http
 POST /api/v1/vehicles
-X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f42
+Authorization: Bearer {access_token}
 Content-Type: application/json
 ```
 
@@ -661,8 +657,7 @@ A placa e normalizada para letras maiusculas e sem separadores. Placas duplicada
 
 ```http
 POST /api/v1/service-orders
-X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f42
-X-User-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f44
+Authorization: Bearer {access_token}
 Content-Type: application/json
 ```
 
@@ -683,8 +678,7 @@ A ordem e criada com status inicial `open`. O veiculo deve pertencer ao tenant a
 
 ```http
 POST /api/v1/service-orders/018f95f2-0f08-7f85-9b31-2d833a1a2f43/parts
-X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f42
-X-User-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f44
+Authorization: Bearer {access_token}
 Content-Type: application/json
 ```
 
@@ -703,8 +697,7 @@ A peca fica vinculada a ordem de servico, mas o estoque ainda nao e baixado. Nes
 
 ```http
 PATCH /api/v1/service-orders/018f95f2-0f08-7f85-9b31-2d833a1a2f43/finish
-X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f42
-X-User-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f44
+Authorization: Bearer {access_token}
 ```
 
 A finalizacao registra uma saida de estoque para cada peca vinculada a ordem usando `type` igual a `service_consumption`, atualiza o saldo dos itens e marca a ordem como `finished`. O processo e executado em transacao para evitar baixa parcial.
@@ -718,8 +711,8 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - Estrutura inicial em `app/Modules`.
 - Contratos compartilhados para `InputDto`, `OutputDto`, `UseCase` e `JsonPresenter`.
 - Modulo `Tenant` inicial.
-- `TenantContext` resolvido por middleware.
-- Middleware `tenant` usando o header `X-Tenant-Id`.
+- `TenantContext` resolvido pelo token autenticado.
+- Middleware `auth.api` usando `Authorization: Bearer`.
 - Migration da tabela `tenants`.
 - Rotas API em `routes/api.php`.
 - UC04 - Cadastrar produto/peca.

@@ -33,7 +33,7 @@ class ListMostConsumedProductsTest extends TestCase
         $this->registerOutput($otherTenantId, fake()->uuid(), $otherProductId, 9);
 
         $today = now()->toDateString();
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->getJson('/api/v1/dashboard/most-consumed-products?period_from='.$today.'&period_to='.$today);
 
         $response->assertOk()
@@ -59,7 +59,7 @@ class ListMostConsumedProductsTest extends TestCase
         $this->registerEntry($tenantId, $userId, $secondProductId, 10);
         $this->registerOutput($tenantId, $userId, $secondProductId, 4);
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->getJson('/api/v1/dashboard/most-consumed-products?limit=1');
 
         $response->assertOk()
@@ -74,7 +74,7 @@ class ListMostConsumedProductsTest extends TestCase
 
         $this->registerEntry($tenantId, fake()->uuid(), $productId, 3);
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->getJson('/api/v1/dashboard/most-consumed-products');
 
         $response->assertOk()
@@ -86,7 +86,7 @@ class ListMostConsumedProductsTest extends TestCase
     {
         $tenantId = $this->createTenant();
 
-        $this->withHeader('X-Tenant-Id', $tenantId)
+        $this->withHeaders($this->authHeaders($tenantId))
             ->getJson('/api/v1/dashboard/most-consumed-products?period_from=2026-06-02&period_to=2026-06-01&limit=101')
             ->assertUnprocessable()
             ->assertJsonValidationErrors([
@@ -97,10 +97,7 @@ class ListMostConsumedProductsTest extends TestCase
 
     private function registerEntry(string $tenantId, string $userId, string $productId, int $quantity): void
     {
-        $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => $userId,
-        ])->postJson('/api/v1/inventory/entries', [
+        $this->withHeaders($this->authHeaders($tenantId, $userId))->postJson('/api/v1/inventory/entries', [
             'product_id' => $productId,
             'type' => 'purchase',
             'quantity' => $quantity,
@@ -110,10 +107,7 @@ class ListMostConsumedProductsTest extends TestCase
 
     private function registerOutput(string $tenantId, string $userId, string $productId, int $quantity): void
     {
-        $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => $userId,
-        ])->postJson('/api/v1/inventory/outputs', [
+        $this->withHeaders($this->authHeaders($tenantId, $userId))->postJson('/api/v1/inventory/outputs', [
             'product_id' => $productId,
             'type' => 'service_consumption',
             'quantity' => $quantity,
@@ -142,7 +136,7 @@ class ListMostConsumedProductsTest extends TestCase
         string $sku,
         ?string $barcode = '7891234567890',
     ): string {
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/products', [
                 'name' => $name,
                 'sku' => $sku,

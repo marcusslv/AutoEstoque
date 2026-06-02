@@ -19,10 +19,7 @@ class FinishServiceOrderTest extends TestCase
         $this->createServiceOrderItem($tenantId, $serviceOrderId, $productId, quantity: 2);
         $userId = fake()->uuid();
 
-        $response = $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => $userId,
-        ])->patchJson("/api/v1/service-orders/{$serviceOrderId}/finish");
+        $response = $this->withHeaders($this->authHeaders($tenantId, $userId))->patchJson("/api/v1/service-orders/{$serviceOrderId}/finish");
 
         $response->assertOk()
             ->assertJsonPath('data.tenant_id', $tenantId)
@@ -58,10 +55,7 @@ class FinishServiceOrderTest extends TestCase
         $tenantId = $this->createTenant();
         $serviceOrderId = $this->createServiceOrder($tenantId);
 
-        $response = $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => fake()->uuid(),
-        ])->patchJson("/api/v1/service-orders/{$serviceOrderId}/finish");
+        $response = $this->withHeaders($this->authHeaders($tenantId, fake()->uuid()))->patchJson("/api/v1/service-orders/{$serviceOrderId}/finish");
 
         $response->assertConflict()
             ->assertJson([
@@ -77,10 +71,7 @@ class FinishServiceOrderTest extends TestCase
         $this->createInventoryItem($tenantId, $productId, currentStock: 1);
         $this->createServiceOrderItem($tenantId, $serviceOrderId, $productId, quantity: 2);
 
-        $response = $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => fake()->uuid(),
-        ])->patchJson("/api/v1/service-orders/{$serviceOrderId}/finish");
+        $response = $this->withHeaders($this->authHeaders($tenantId, fake()->uuid()))->patchJson("/api/v1/service-orders/{$serviceOrderId}/finish");
 
         $response->assertConflict()
             ->assertJson([
@@ -111,10 +102,7 @@ class FinishServiceOrderTest extends TestCase
         $tenantId = $this->createTenant();
         $serviceOrderId = $this->createServiceOrder($tenantId, status: 'finished', finishedAt: now());
 
-        $response = $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => fake()->uuid(),
-        ])->patchJson("/api/v1/service-orders/{$serviceOrderId}/finish");
+        $response = $this->withHeaders($this->authHeaders($tenantId, fake()->uuid()))->patchJson("/api/v1/service-orders/{$serviceOrderId}/finish");
 
         $response->assertConflict()
             ->assertJson([
@@ -127,12 +115,11 @@ class FinishServiceOrderTest extends TestCase
         $tenantId = $this->createTenant();
         $serviceOrderId = $this->createServiceOrder($tenantId);
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
-            ->patchJson("/api/v1/service-orders/{$serviceOrderId}/finish");
+        $response = $this->patchJson("/api/v1/service-orders/{$serviceOrderId}/finish");
 
-        $response->assertUnprocessable()
-            ->assertJsonValidationErrors([
-                'X-User-Id',
+        $response->assertUnauthorized()
+            ->assertJson([
+                'message' => 'Bearer token is required.',
             ]);
     }
 

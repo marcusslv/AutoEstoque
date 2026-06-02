@@ -26,7 +26,7 @@ class GenerateZeroStockAlertsTest extends TestCase
         $this->registerEntry($otherTenantId, fake()->uuid(), $otherProductId, 1);
         $this->registerOutput($otherTenantId, fake()->uuid(), $otherProductId, 1);
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->getJson('/api/v1/inventory/alerts/zero-stock');
 
         $response->assertOk()
@@ -45,7 +45,7 @@ class GenerateZeroStockAlertsTest extends TestCase
 
         $this->registerEntry($tenantId, fake()->uuid(), $productId, 1);
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->getJson('/api/v1/inventory/alerts/zero-stock');
 
         $response->assertOk()
@@ -57,7 +57,7 @@ class GenerateZeroStockAlertsTest extends TestCase
     {
         $tenantId = $this->createTenant();
 
-        $this->withHeader('X-Tenant-Id', $tenantId)
+        $this->withHeaders($this->authHeaders($tenantId))
             ->getJson('/api/v1/inventory/alerts/zero-stock?limit=101')
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['limit']);
@@ -65,10 +65,7 @@ class GenerateZeroStockAlertsTest extends TestCase
 
     private function registerEntry(string $tenantId, string $userId, string $productId, int $quantity): void
     {
-        $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => $userId,
-        ])->postJson('/api/v1/inventory/entries', [
+        $this->withHeaders($this->authHeaders($tenantId, $userId))->postJson('/api/v1/inventory/entries', [
             'product_id' => $productId,
             'type' => 'purchase',
             'quantity' => $quantity,
@@ -78,10 +75,7 @@ class GenerateZeroStockAlertsTest extends TestCase
 
     private function registerOutput(string $tenantId, string $userId, string $productId, int $quantity): void
     {
-        $this->withHeaders([
-            'X-Tenant-Id' => $tenantId,
-            'X-User-Id' => $userId,
-        ])->postJson('/api/v1/inventory/outputs', [
+        $this->withHeaders($this->authHeaders($tenantId, $userId))->postJson('/api/v1/inventory/outputs', [
             'product_id' => $productId,
             'type' => 'service_consumption',
             'quantity' => $quantity,
@@ -111,7 +105,7 @@ class GenerateZeroStockAlertsTest extends TestCase
         ?string $barcode = '7891234567890',
         int $minimumStock = 2,
     ): string {
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/products', [
                 'name' => $name,
                 'sku' => $sku,

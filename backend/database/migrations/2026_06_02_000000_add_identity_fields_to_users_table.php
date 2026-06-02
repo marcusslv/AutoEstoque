@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table): void {
             $table->foreignUuid('tenant_id')->nullable()->after('id')->constrained('tenants')->nullOnDelete();
+            $table->uuid('public_id')->nullable()->unique()->after('tenant_id');
             $table->string('status', 20)->default('active')->after('password');
             $table->string('role', 40)->default('admin')->after('status');
         });
@@ -19,7 +20,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table): void {
             $table->dropConstrainedForeignId('tenant_id');
-            $table->dropColumn(['status', 'role']);
+            $table->dropColumn(['public_id', 'status', 'role']);
         });
     }
 };

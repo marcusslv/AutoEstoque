@@ -15,7 +15,7 @@ class UpdateProductTest extends TestCase
         $tenantId = $this->createTenant();
         $productId = $this->createProduct($tenantId);
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->patchJson("/api/v1/products/{$productId}", [
                 'name' => 'Filtro de oleo atualizado',
                 'sku' => ' fo-002 ',
@@ -52,7 +52,7 @@ class UpdateProductTest extends TestCase
         $tenantId = $this->createTenant();
         $productId = $this->createProduct($tenantId, sku: 'FO-001', barcode: '7891234567890');
 
-        $this->withHeader('X-Tenant-Id', $tenantId)
+        $this->withHeaders($this->authHeaders($tenantId))
             ->patchJson("/api/v1/products/{$productId}", $this->payload([
                 'name' => 'Filtro atualizado',
                 'sku' => 'FO-001',
@@ -68,7 +68,7 @@ class UpdateProductTest extends TestCase
         $secondTenantId = $this->createTenant('Oficina B');
         $productId = $this->createProduct($firstTenantId);
 
-        $this->withHeader('X-Tenant-Id', $secondTenantId)
+        $this->withHeaders($this->authHeaders($secondTenantId))
             ->patchJson("/api/v1/products/{$productId}", $this->payload())
             ->assertNotFound()
             ->assertJson([
@@ -82,7 +82,7 @@ class UpdateProductTest extends TestCase
         $productId = $this->createProduct($tenantId, sku: 'FO-001', barcode: '7891234567890');
         $this->createProduct($tenantId, sku: 'FA-001', barcode: '7891234567891');
 
-        $this->withHeader('X-Tenant-Id', $tenantId)
+        $this->withHeaders($this->authHeaders($tenantId))
             ->patchJson("/api/v1/products/{$productId}", $this->payload([
                 'sku' => 'FA-001',
                 'barcode' => '7891234567892',
@@ -99,7 +99,7 @@ class UpdateProductTest extends TestCase
         $productId = $this->createProduct($tenantId, sku: 'FO-001', barcode: '7891234567890');
         $this->createProduct($tenantId, sku: 'FA-001', barcode: '7891234567891');
 
-        $this->withHeader('X-Tenant-Id', $tenantId)
+        $this->withHeaders($this->authHeaders($tenantId))
             ->patchJson("/api/v1/products/{$productId}", $this->payload([
                 'sku' => 'FO-002',
                 'barcode' => '7891234567891',
@@ -115,7 +115,7 @@ class UpdateProductTest extends TestCase
         $tenantId = $this->createTenant();
         $productId = $this->createProduct($tenantId);
 
-        $this->withHeader('X-Tenant-Id', $tenantId)
+        $this->withHeaders($this->authHeaders($tenantId))
             ->patchJson("/api/v1/products/{$productId}", [
                 'name' => '',
                 'sku' => '',
@@ -167,7 +167,7 @@ class UpdateProductTest extends TestCase
         string $sku = 'FO-001',
         ?string $barcode = '7891234567890',
     ): string {
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/products', $this->payload([
                 'sku' => $sku,
                 'barcode' => $barcode,

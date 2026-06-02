@@ -14,7 +14,7 @@ class CreateVehicleTest extends TestCase
     {
         $tenantId = $this->createTenant();
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/vehicles', [
                 'plate' => 'abc-1d23',
                 'brand' => 'Chevrolet',
@@ -48,11 +48,11 @@ class CreateVehicleTest extends TestCase
     {
         $tenantId = $this->createTenant();
 
-        $this->withHeader('X-Tenant-Id', $tenantId)
+        $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/vehicles', $this->payload(['plate' => 'ABC1D23']))
             ->assertCreated();
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/vehicles', $this->payload(['plate' => 'abc-1d23']));
 
         $response->assertConflict()
@@ -66,11 +66,11 @@ class CreateVehicleTest extends TestCase
         $firstTenantId = $this->createTenant('Oficina A');
         $secondTenantId = $this->createTenant('Oficina B');
 
-        $this->withHeader('X-Tenant-Id', $firstTenantId)
+        $this->withHeaders($this->authHeaders($firstTenantId))
             ->postJson('/api/v1/vehicles', $this->payload(['plate' => 'ABC1D23']))
             ->assertCreated();
 
-        $this->withHeader('X-Tenant-Id', $secondTenantId)
+        $this->withHeaders($this->authHeaders($secondTenantId))
             ->postJson('/api/v1/vehicles', $this->payload(['plate' => 'abc-1d23']))
             ->assertCreated();
     }
@@ -79,7 +79,7 @@ class CreateVehicleTest extends TestCase
     {
         $tenantId = $this->createTenant();
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/vehicles', [
                 'plate' => '',
                 'brand' => '',
@@ -104,7 +104,7 @@ class CreateVehicleTest extends TestCase
     {
         $tenantId = $this->createTenant();
 
-        $response = $this->withHeader('X-Tenant-Id', $tenantId)
+        $response = $this->withHeaders($this->authHeaders($tenantId))
             ->postJson('/api/v1/vehicles', $this->payload(['plate' => 'ABC123']));
 
         $response->assertUnprocessable()

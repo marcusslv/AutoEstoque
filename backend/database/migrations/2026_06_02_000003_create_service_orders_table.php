@@ -12,7 +12,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->foreignUuid('vehicle_id')->constrained('vehicles')->cascadeOnDelete();
-            $table->unsignedBigInteger('created_by_user_id');
+            $table->uuid('created_by_user_id');
             $table->string('customer_name', 160);
             $table->text('services_description');
             $table->text('observations')->nullable();
