@@ -250,6 +250,7 @@ POST /api/v1/inventory/entries
 POST /api/v1/inventory/outputs
 POST /api/v1/products
 PATCH /api/v1/products/{product}
+POST /api/v1/vehicles
 ```
 
 ### Autenticar Usuario
@@ -630,6 +631,29 @@ Payload:
 }
 ```
 
+### Cadastrar Veiculo
+
+```http
+POST /api/v1/vehicles
+X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f42
+Content-Type: application/json
+```
+
+Payload:
+
+```json
+{
+  "plate": "ABC-1D23",
+  "brand": "Chevrolet",
+  "model": "Onix",
+  "year": 2020,
+  "owner_name": "Joao Silva",
+  "owner_phone": "11999990000"
+}
+```
+
+A placa e normalizada para letras maiusculas e sem separadores. Placas duplicadas dentro do mesmo tenant retornam `409 Conflict`; a mesma placa pode existir em tenants diferentes.
+
 ## Estado Atual
 
 O setup inicial do Laravel esta criado e validado com Docker.
@@ -657,12 +681,15 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - UC01 - Autenticar usuario, versao inicial com token de API.
 - UC02 - Recuperar senha.
 - UC03 - Gerenciar usuarios da oficina.
+- UC13 - Cadastrar veiculo.
 - Migration de campos de identidade em `users`.
 - Migration da tabela `user_access_tokens`.
 - Migration da tabela `products`.
+- Migration da tabela `vehicles`.
 - Migrations das tabelas `inventory_items` e `stock_movements`.
 - Modulo `Catalog` inicial.
 - Modulo `Inventory` inicial.
+- Modulo `Workshop` inicial.
 
 Validacoes ja realizadas:
 
