@@ -251,6 +251,7 @@ POST /api/v1/inventory/outputs
 POST /api/v1/products
 PATCH /api/v1/products/{product}
 POST /api/v1/service-orders
+POST /api/v1/service-orders/{serviceOrder}/parts
 POST /api/v1/vehicles
 ```
 
@@ -677,6 +678,26 @@ Payload:
 
 A ordem e criada com status inicial `open`. O veiculo deve pertencer ao tenant atual; caso contrario, a API retorna `404 Not Found`.
 
+### Adicionar Peca A Ordem De Servico
+
+```http
+POST /api/v1/service-orders/018f95f2-0f08-7f85-9b31-2d833a1a2f43/parts
+X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f42
+X-User-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f44
+Content-Type: application/json
+```
+
+Payload:
+
+```json
+{
+  "product_id": "018f95f2-0f08-7f85-9b31-2d833a1a2f45",
+  "quantity": 2
+}
+```
+
+A peca fica vinculada a ordem de servico, mas o estoque ainda nao e baixado. Nesta versao, o saldo disponivel e validado antes da vinculacao para evitar reservar quantidade maior que o estoque atual.
+
 ## Estado Atual
 
 O setup inicial do Laravel esta criado e validado com Docker.
@@ -706,11 +727,13 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - UC03 - Gerenciar usuarios da oficina.
 - UC13 - Cadastrar veiculo.
 - UC14 - Criar ordem de servico.
+- UC15 - Adicionar peca a ordem de servico.
 - Migration de campos de identidade em `users`.
 - Migration da tabela `user_access_tokens`.
 - Migration da tabela `products`.
 - Migration da tabela `vehicles`.
 - Migration da tabela `service_orders`.
+- Migration da tabela `service_order_items`.
 - Migrations das tabelas `inventory_items` e `stock_movements`.
 - Modulo `Catalog` inicial.
 - Modulo `Inventory` inicial.

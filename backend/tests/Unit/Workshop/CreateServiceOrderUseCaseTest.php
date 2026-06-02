@@ -13,6 +13,7 @@ use App\Modules\Workshop\Domain\Factories\ServiceOrderFactory;
 use App\Modules\Workshop\Domain\Factories\VehicleFactory;
 use App\Modules\Workshop\Domain\Repositories\ServiceOrderRepository;
 use App\Modules\Workshop\Domain\Repositories\VehicleRepository;
+use App\Modules\Workshop\Domain\ValueObjects\ServiceOrderId;
 use App\Modules\Workshop\Domain\ValueObjects\VehicleId;
 use App\Modules\Workshop\Domain\ValueObjects\VehiclePlate;
 use PHPUnit\Framework\TestCase;
@@ -126,6 +127,17 @@ final class InMemoryServiceOrderRepository implements ServiceOrderRepository
      * @var array<int, ServiceOrder>
      */
     public array $serviceOrders = [];
+
+    public function findById(TenantId $tenantId, ServiceOrderId $serviceOrderId): ?ServiceOrder
+    {
+        foreach ($this->serviceOrders as $serviceOrder) {
+            if ($serviceOrder->tenantId()->equals($tenantId) && $serviceOrder->id()->value === $serviceOrderId->value) {
+                return $serviceOrder;
+            }
+        }
+
+        return null;
+    }
 
     public function save(ServiceOrder $serviceOrder): void
     {
