@@ -39,12 +39,14 @@ use App\Modules\Workshop\Application\UseCases\ListVehicles\Contracts\VehicleList
 use App\Modules\Workshop\Application\UseCases\ShowServiceOrder\Contracts\ServiceOrderDetailsQuery;
 use App\Modules\Workshop\Domain\Repositories\ServiceOrderItemRepository;
 use App\Modules\Workshop\Domain\Repositories\ServiceOrderRepository;
+use App\Modules\Workshop\Domain\Repositories\ServiceOrderStockMovementLinkRepository;
 use App\Modules\Workshop\Domain\Repositories\VehicleRepository;
 use App\Modules\Workshop\Infrastructure\Persistence\Eloquent\Queries\EloquentServiceOrderDetailsQuery;
 use App\Modules\Workshop\Infrastructure\Persistence\Eloquent\Queries\EloquentServiceOrderListQuery;
 use App\Modules\Workshop\Infrastructure\Persistence\Eloquent\Queries\EloquentVehicleListQuery;
 use App\Modules\Workshop\Infrastructure\Persistence\Eloquent\Repositories\EloquentServiceOrderItemRepository;
 use App\Modules\Workshop\Infrastructure\Persistence\Eloquent\Repositories\EloquentServiceOrderRepository;
+use App\Modules\Workshop\Infrastructure\Persistence\Eloquent\Repositories\EloquentServiceOrderStockMovementLinkRepository;
 use App\Modules\Workshop\Infrastructure\Persistence\Eloquent\Repositories\EloquentVehicleRepository;
 use Illuminate\Support\ServiceProvider;
 
@@ -72,6 +74,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(VehicleRepository::class, EloquentVehicleRepository::class);
         $this->app->bind(ServiceOrderRepository::class, EloquentServiceOrderRepository::class);
         $this->app->bind(ServiceOrderItemRepository::class, EloquentServiceOrderItemRepository::class);
+        $this->app->bind(ServiceOrderStockMovementLinkRepository::class, EloquentServiceOrderStockMovementLinkRepository::class);
         $this->app->bind(InventoryItemRepository::class, EloquentInventoryItemRepository::class);
         $this->app->bind(StockMovementRepository::class, EloquentStockMovementRepository::class);
         $this->app->bind(MinimumStockAlertQuery::class, EloquentMinimumStockAlertQuery::class);

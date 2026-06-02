@@ -27,13 +27,16 @@ use App\Modules\Workshop\Application\UseCases\FinishServiceOrder\Dtos\FinishServ
 use App\Modules\Workshop\Application\UseCases\FinishServiceOrder\FinishServiceOrderUseCase;
 use App\Modules\Workshop\Domain\Entities\ServiceOrder;
 use App\Modules\Workshop\Domain\Entities\ServiceOrderItem;
+use App\Modules\Workshop\Domain\Entities\ServiceOrderStockMovementLink;
 use App\Modules\Workshop\Domain\Exceptions\ServiceOrderHasNoItemsException;
 use App\Modules\Workshop\Domain\Exceptions\ServiceOrderNotFoundException;
 use App\Modules\Workshop\Domain\Exceptions\ServiceOrderNotOpenException;
 use App\Modules\Workshop\Domain\Factories\ServiceOrderFactory;
 use App\Modules\Workshop\Domain\Factories\ServiceOrderItemFactory;
+use App\Modules\Workshop\Domain\Factories\ServiceOrderStockMovementLinkFactory;
 use App\Modules\Workshop\Domain\Repositories\ServiceOrderItemRepository;
 use App\Modules\Workshop\Domain\Repositories\ServiceOrderRepository;
+use App\Modules\Workshop\Domain\Repositories\ServiceOrderStockMovementLinkRepository;
 use App\Modules\Workshop\Domain\ValueObjects\ServiceOrderId;
 use App\Modules\Workshop\Domain\ValueObjects\ServiceOrderItemId;
 use App\Modules\Workshop\Domain\ValueObjects\ServiceOrderStatus;
@@ -55,12 +58,14 @@ class FinishServiceOrderUseCaseTest extends TestCase
         $inventoryItems->save($this->inventoryItem(currentStock: 5));
 
         $stockMovements = new FinishStockMovementRepository;
+        $serviceOrderStockMovementLinks = new FinishServiceOrderStockMovementLinkRepository;
 
         $output = $this->useCase(
             serviceOrders: $serviceOrders,
             serviceOrderItems: $serviceOrderItems,
             inventoryItems: $inventoryItems,
             stockMovements: $stockMovements,
+            serviceOrderStockMovementLinks: $serviceOrderStockMovementLinks,
         )->execute($this->input());
 
         $this->assertInstanceOf(FinishServiceOrderOutput::class, $output);
@@ -70,6 +75,10 @@ class FinishServiceOrderUseCaseTest extends TestCase
         $this->assertSame(3, $inventoryItems->items[0]->currentStock()->value);
         $this->assertCount(1, $stockMovements->movements);
         $this->assertSame('service_consumption', $stockMovements->movements[0]->type()->value);
+        $this->assertCount(1, $serviceOrderStockMovementLinks->links);
+        $this->assertSame('018f95f2-0f08-7f85-9b31-2d833a1a2f43', $serviceOrderStockMovementLinks->links[0]->serviceOrderId()->value);
+        $this->assertSame('018f95f2-0f08-7f85-9b31-2d833a1a2f48', $serviceOrderStockMovementLinks->links[0]->serviceOrderItemId()->value);
+        $this->assertSame($output->movementIds[0], $serviceOrderStockMovementLinks->links[0]->stockMovementId()->value);
     }
 
     public function test_it_rejects_missing_service_order(): void
@@ -109,6 +118,7 @@ class FinishServiceOrderUseCaseTest extends TestCase
 
         $inventoryItems = new FinishInventoryItemRepository;
         $inventoryItems->save($this->inventoryItem(currentStock: 1));
+        $serviceOrderStockMovementLinks = new FinishServiceOrderStockMovementLinkRepository;
 
         $this->expectException(InsufficientStockException::class);
 
@@ -117,9 +127,11 @@ class FinishServiceOrderUseCaseTest extends TestCase
                 serviceOrders: $serviceOrders,
                 serviceOrderItems: $serviceOrderItems,
                 inventoryItems: $inventoryItems,
+                serviceOrderStockMovementLinks: $serviceOrderStockMovementLinks,
             )->execute($this->input());
         } finally {
             $this->assertSame('open', $serviceOrders->serviceOrders[0]->status()->value);
+            $this->assertCount(0, $serviceOrderStockMovementLinks->links);
         }
     }
 
@@ -128,9 +140,11 @@ class FinishServiceOrderUseCaseTest extends TestCase
         ?FinishServiceOrderItemRepository $serviceOrderItems = null,
         ?FinishInventoryItemRepository $inventoryItems = null,
         ?FinishStockMovementRepository $stockMovements = null,
+        ?FinishServiceOrderStockMovementLinkRepository $serviceOrderStockMovementLinks = null,
     ): FinishServiceOrderUseCase {
         $inventoryItems ??= new FinishInventoryItemRepository;
         $stockMovements ??= new FinishStockMovementRepository;
+        $serviceOrderStockMovementLinks ??= new FinishServiceOrderStockMovementLinkRepository;
 
         $registerStockOutput = new RegisterStockOutputUseCase(
             new FinishProductRepository([$this->product()]),
@@ -144,6 +158,8 @@ class FinishServiceOrderUseCaseTest extends TestCase
             $serviceOrders ?? new FinishServiceOrderRepository,
             $serviceOrderItems ?? new FinishServiceOrderItemRepository,
             $registerStockOutput,
+            $serviceOrderStockMovementLinks,
+            new ServiceOrderStockMovementLinkFactory,
             new FinishFakeTransactionManager,
         );
     }
@@ -312,6 +328,19 @@ final class FinishStockMovementRepository implements StockMovementRepository
     public function save(StockMovement $movement): void
     {
         $this->movements[] = $movement;
+    }
+}
+
+final class FinishServiceOrderStockMovementLinkRepository implements ServiceOrderStockMovementLinkRepository
+{
+    /**
+     * @var array<int, ServiceOrderStockMovementLink>
+     */
+    public array $links = [];
+
+    public function save(ServiceOrderStockMovementLink $link): void
+    {
+        $this->links[] = $link;
     }
 }
 

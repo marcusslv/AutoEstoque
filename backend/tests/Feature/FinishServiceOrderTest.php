@@ -16,7 +16,7 @@ class FinishServiceOrderTest extends TestCase
         $serviceOrderId = $this->createServiceOrder($tenantId);
         $productId = $this->createProduct($tenantId);
         $this->createInventoryItem($tenantId, $productId, currentStock: 5);
-        $this->createServiceOrderItem($tenantId, $serviceOrderId, $productId, quantity: 2);
+        $serviceOrderItemId = $this->createServiceOrderItem($tenantId, $serviceOrderId, $productId, quantity: 2);
         $userId = fake()->uuid();
 
         $response = $this->withHeaders($this->authHeaders($tenantId, $userId))->patchJson("/api/v1/service-orders/{$serviceOrderId}/finish");
@@ -47,6 +47,15 @@ class FinishServiceOrderTest extends TestCase
             'quantity' => 2,
             'reason' => 'Consumo em ordem de servico',
             'note' => "Ordem de servico {$serviceOrderId}",
+        ]);
+
+        $movementId = $response->json('data.movement_ids.0');
+
+        $this->assertDatabaseHas('service_order_stock_movements', [
+            'tenant_id' => $tenantId,
+            'service_order_id' => $serviceOrderId,
+            'service_order_item_id' => $serviceOrderItemId,
+            'stock_movement_id' => $movementId,
         ]);
     }
 
@@ -94,6 +103,11 @@ class FinishServiceOrderTest extends TestCase
             'tenant_id' => $tenantId,
             'product_id' => $productId,
             'type' => 'service_consumption',
+        ]);
+
+        $this->assertDatabaseMissing('service_order_stock_movements', [
+            'tenant_id' => $tenantId,
+            'service_order_id' => $serviceOrderId,
         ]);
     }
 
@@ -215,10 +229,12 @@ class FinishServiceOrderTest extends TestCase
         ]);
     }
 
-    private function createServiceOrderItem(string $tenantId, string $serviceOrderId, string $productId, int $quantity): void
+    private function createServiceOrderItem(string $tenantId, string $serviceOrderId, string $productId, int $quantity): string
     {
+        $serviceOrderItemId = fake()->uuid();
+
         DB::table('service_order_items')->insert([
-            'id' => fake()->uuid(),
+            'id' => $serviceOrderItemId,
             'tenant_id' => $tenantId,
             'service_order_id' => $serviceOrderId,
             'product_id' => $productId,
@@ -227,5 +243,7 @@ class FinishServiceOrderTest extends TestCase
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        return $serviceOrderItemId;
     }
 }

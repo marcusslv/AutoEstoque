@@ -749,7 +749,7 @@ PATCH /api/v1/service-orders/018f95f2-0f08-7f85-9b31-2d833a1a2f43/finish
 Authorization: Bearer {access_token}
 ```
 
-A finalizacao registra uma saida de estoque para cada peca vinculada a ordem usando `type` igual a `service_consumption`, atualiza o saldo dos itens e marca a ordem como `finished`. O processo e executado em transacao para evitar baixa parcial.
+A finalizacao registra uma saida de estoque para cada peca vinculada a ordem usando `type` igual a `service_consumption`, atualiza o saldo dos itens e marca a ordem como `finished`. Cada movimentacao gerada tambem fica vinculada formalmente ao item da ordem na tabela `service_order_stock_movements`, permitindo rastrear qual peca da OS originou cada baixa de estoque. O processo e executado em transacao para evitar baixa parcial.
 
 ## Estado Atual
 
@@ -788,6 +788,7 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - Migration da tabela `vehicles`.
 - Migration da tabela `service_orders`.
 - Migration da tabela `service_order_items`.
+- Migration da tabela `service_order_stock_movements`.
 - Migrations das tabelas `inventory_items` e `stock_movements`.
 - Modulo `Catalog` inicial.
 - Modulo `Inventory` inicial.
