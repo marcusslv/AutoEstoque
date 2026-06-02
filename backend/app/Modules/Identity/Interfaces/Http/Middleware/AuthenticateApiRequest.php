@@ -46,7 +46,10 @@ final readonly class AuthenticateApiRequest
         }
 
         $this->tenantContext->set(new TenantId((string) $user->tenant_id));
-        $this->userContext->set((string) ($user->public_id ?? $user->id));
+        $this->userContext->set(
+            userId: (string) ($user->public_id ?? $user->id),
+            role: (string) $user->role,
+        );
         $token->forceFill(['last_used_at' => now()])->save();
 
         try {

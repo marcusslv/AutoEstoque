@@ -299,6 +299,22 @@ Resposta:
 
 Nesta versao, o token e persistido em `user_access_tokens` usando hash SHA-256. As rotas protegidas usam `Authorization: Bearer {access_token}`; o tenant e o usuario atual sao resolvidos a partir do token autenticado.
 
+### Permissoes Por Perfil
+
+Roles aceitos:
+
+- `owner`
+- `manager`
+- `admin`
+- `mechanic`
+
+Matriz atual:
+
+- `owner`, `manager` e `admin`: podem acessar gestao de usuarios, dashboard, alertas, historico de movimentacoes, cadastro de produtos e movimentacoes manuais de estoque.
+- `mechanic`: pode consultar estoque e operar rotinas da oficina, incluindo veiculos, ordens de servico, adicao de pecas e finalizacao de OS.
+
+Quando o perfil autenticado nao tem permissao para a rota, a API retorna `403 Forbidden`.
+
 ### Encerrar Sessao
 
 ```http
@@ -764,6 +780,7 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - Modulo `Tenant` inicial.
 - `TenantContext` resolvido pelo token autenticado.
 - Middleware `auth.api` usando `Authorization: Bearer`.
+- Middleware `role` para permissoes por perfil.
 - Migration da tabela `tenants`.
 - Rotas API em `routes/api.php`.
 - UC04 - Cadastrar produto/peca.

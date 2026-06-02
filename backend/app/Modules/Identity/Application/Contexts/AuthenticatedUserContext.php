@@ -8,9 +8,12 @@ final class AuthenticatedUserContext
 {
     private ?string $userId = null;
 
-    public function set(string $userId): void
+    private ?string $role = null;
+
+    public function set(string $userId, string $role): void
     {
         $this->userId = $userId;
+        $this->role = $role;
     }
 
     public function id(): string
@@ -22,8 +25,23 @@ final class AuthenticatedUserContext
         return $this->userId;
     }
 
+    public function role(): string
+    {
+        if ($this->role === null) {
+            throw new AuthenticatedUserNotResolvedException;
+        }
+
+        return $this->role;
+    }
+
+    public function hasAnyRole(string ...$roles): bool
+    {
+        return in_array($this->role(), $roles, true);
+    }
+
     public function clear(): void
     {
         $this->userId = null;
+        $this->role = null;
     }
 }

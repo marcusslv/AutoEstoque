@@ -40,6 +40,9 @@ Route::prefix('v1')->group(function (): void {
     Route::post('/auth/reset-password', ResetPasswordController::class);
 
     Route::middleware('auth.api')->group(function (): void {
+        $backOfficeRoles = 'role:owner,manager,admin';
+        $workshopRoles = 'role:owner,manager,admin,mechanic';
+
         Route::post('/auth/logout', LogoutUserController::class);
 
         Route::get('/context/tenant', function (TenantContext $tenantContext) {
@@ -48,27 +51,27 @@ Route::prefix('v1')->group(function (): void {
             ];
         });
 
-        Route::get('/users', ListWorkshopUsersController::class);
-        Route::post('/users', CreateWorkshopUserController::class);
-        Route::patch('/users/{user}', UpdateWorkshopUserController::class);
-        Route::patch('/users/{user}/deactivate', DeactivateWorkshopUserController::class);
-        Route::get('/dashboard', ViewDashboardController::class);
-        Route::get('/dashboard/most-consumed-products', ListMostConsumedProductsController::class);
-        Route::get('/stock', ListStockController::class);
-        Route::get('/inventory/alerts/minimum-stock', GenerateMinimumStockAlertsController::class);
-        Route::get('/inventory/alerts/zero-stock', GenerateZeroStockAlertsController::class);
-        Route::get('/inventory/movements', ListStockMovementHistoryController::class);
-        Route::post('/inventory/adjustments', RegisterStockAdjustmentController::class);
-        Route::post('/inventory/entries', RegisterStockEntryController::class);
-        Route::post('/inventory/outputs', RegisterStockOutputController::class);
-        Route::post('/products', CreateProductController::class);
-        Route::patch('/products/{product}', UpdateProductController::class);
-        Route::get('/service-orders', ListServiceOrdersController::class);
-        Route::post('/service-orders', CreateServiceOrderController::class);
-        Route::get('/service-orders/{serviceOrder}', ShowServiceOrderController::class);
-        Route::patch('/service-orders/{serviceOrder}/finish', FinishServiceOrderController::class);
-        Route::post('/service-orders/{serviceOrder}/parts', AddPartToServiceOrderController::class);
-        Route::get('/vehicles', ListVehiclesController::class);
-        Route::post('/vehicles', CreateVehicleController::class);
+        Route::get('/users', ListWorkshopUsersController::class)->middleware($backOfficeRoles);
+        Route::post('/users', CreateWorkshopUserController::class)->middleware($backOfficeRoles);
+        Route::patch('/users/{user}', UpdateWorkshopUserController::class)->middleware($backOfficeRoles);
+        Route::patch('/users/{user}/deactivate', DeactivateWorkshopUserController::class)->middleware($backOfficeRoles);
+        Route::get('/dashboard', ViewDashboardController::class)->middleware($backOfficeRoles);
+        Route::get('/dashboard/most-consumed-products', ListMostConsumedProductsController::class)->middleware($backOfficeRoles);
+        Route::get('/stock', ListStockController::class)->middleware($workshopRoles);
+        Route::get('/inventory/alerts/minimum-stock', GenerateMinimumStockAlertsController::class)->middleware($backOfficeRoles);
+        Route::get('/inventory/alerts/zero-stock', GenerateZeroStockAlertsController::class)->middleware($backOfficeRoles);
+        Route::get('/inventory/movements', ListStockMovementHistoryController::class)->middleware($backOfficeRoles);
+        Route::post('/inventory/adjustments', RegisterStockAdjustmentController::class)->middleware($backOfficeRoles);
+        Route::post('/inventory/entries', RegisterStockEntryController::class)->middleware($backOfficeRoles);
+        Route::post('/inventory/outputs', RegisterStockOutputController::class)->middleware($backOfficeRoles);
+        Route::post('/products', CreateProductController::class)->middleware($backOfficeRoles);
+        Route::patch('/products/{product}', UpdateProductController::class)->middleware($backOfficeRoles);
+        Route::get('/service-orders', ListServiceOrdersController::class)->middleware($workshopRoles);
+        Route::post('/service-orders', CreateServiceOrderController::class)->middleware($workshopRoles);
+        Route::get('/service-orders/{serviceOrder}', ShowServiceOrderController::class)->middleware($workshopRoles);
+        Route::patch('/service-orders/{serviceOrder}/finish', FinishServiceOrderController::class)->middleware($workshopRoles);
+        Route::post('/service-orders/{serviceOrder}/parts', AddPartToServiceOrderController::class)->middleware($workshopRoles);
+        Route::get('/vehicles', ListVehiclesController::class)->middleware($workshopRoles);
+        Route::post('/vehicles', CreateVehicleController::class)->middleware($workshopRoles);
     });
 });

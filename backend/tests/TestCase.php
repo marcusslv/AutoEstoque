@@ -12,7 +12,7 @@ abstract class TestCase extends BaseTestCase
     /**
      * @return array<string, string>
      */
-    protected function authHeaders(string $tenantId, ?string $publicUserId = null): array
+    protected function authHeaders(string $tenantId, ?string $publicUserId = null, string $role = 'admin'): array
     {
         $plainToken = Str::random(64);
 
@@ -30,6 +30,7 @@ abstract class TestCase extends BaseTestCase
             $existingUser = DB::table('users')
                 ->where('tenant_id', $tenantId)
                 ->where('email', 'like', 'auth-user-%')
+                ->where('role', $role)
                 ->first();
 
             $publicUserId = $existingUser?->public_id;
@@ -47,7 +48,7 @@ abstract class TestCase extends BaseTestCase
                 'email' => 'auth-user-'.Str::uuid().'@oficina.com',
                 'password' => Hash::make('secret'),
                 'status' => 'active',
-                'role' => 'admin',
+                'role' => $role,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
