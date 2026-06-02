@@ -250,6 +250,7 @@ POST /api/v1/inventory/entries
 POST /api/v1/inventory/outputs
 POST /api/v1/products
 PATCH /api/v1/products/{product}
+POST /api/v1/service-orders
 POST /api/v1/vehicles
 ```
 
@@ -654,6 +655,28 @@ Payload:
 
 A placa e normalizada para letras maiusculas e sem separadores. Placas duplicadas dentro do mesmo tenant retornam `409 Conflict`; a mesma placa pode existir em tenants diferentes.
 
+### Criar Ordem De Servico
+
+```http
+POST /api/v1/service-orders
+X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f42
+X-User-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f44
+Content-Type: application/json
+```
+
+Payload:
+
+```json
+{
+  "vehicle_id": "018f95f2-0f08-7f85-9b31-2d833a1a2f43",
+  "customer_name": "Joao Silva",
+  "services_description": "Troca de oleo e filtros",
+  "observations": "Cliente aguardando"
+}
+```
+
+A ordem e criada com status inicial `open`. O veiculo deve pertencer ao tenant atual; caso contrario, a API retorna `404 Not Found`.
+
 ## Estado Atual
 
 O setup inicial do Laravel esta criado e validado com Docker.
@@ -682,10 +705,12 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - UC02 - Recuperar senha.
 - UC03 - Gerenciar usuarios da oficina.
 - UC13 - Cadastrar veiculo.
+- UC14 - Criar ordem de servico.
 - Migration de campos de identidade em `users`.
 - Migration da tabela `user_access_tokens`.
 - Migration da tabela `products`.
 - Migration da tabela `vehicles`.
+- Migration da tabela `service_orders`.
 - Migrations das tabelas `inventory_items` e `stock_movements`.
 - Modulo `Catalog` inicial.
 - Modulo `Inventory` inicial.

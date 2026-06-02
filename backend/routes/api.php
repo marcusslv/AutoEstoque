@@ -19,6 +19,7 @@ use App\Modules\Inventory\Interfaces\Http\Controllers\RegisterStockAdjustmentCon
 use App\Modules\Inventory\Interfaces\Http\Controllers\RegisterStockEntryController;
 use App\Modules\Inventory\Interfaces\Http\Controllers\RegisterStockOutputController;
 use App\Modules\Tenant\Application\TenantContext;
+use App\Modules\Workshop\Interfaces\Http\Controllers\CreateServiceOrderController;
 use App\Modules\Workshop\Interfaces\Http\Controllers\CreateVehicleController;
 use Illuminate\Support\Facades\Route;
 
@@ -54,6 +55,7 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/inventory/outputs', RegisterStockOutputController::class);
         Route::post('/products', CreateProductController::class);
         Route::patch('/products/{product}', UpdateProductController::class);
+        Route::post('/service-orders', CreateServiceOrderController::class);
         Route::post('/vehicles', CreateVehicleController::class);
     });
 });

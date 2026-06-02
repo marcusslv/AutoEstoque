@@ -10,6 +10,7 @@ use App\Modules\Workshop\Domain\Entities\Vehicle;
 use App\Modules\Workshop\Domain\Exceptions\DuplicatedVehiclePlateException;
 use App\Modules\Workshop\Domain\Factories\VehicleFactory;
 use App\Modules\Workshop\Domain\Repositories\VehicleRepository;
+use App\Modules\Workshop\Domain\ValueObjects\VehicleId;
 use App\Modules\Workshop\Domain\ValueObjects\VehiclePlate;
 use PHPUnit\Framework\TestCase;
 
@@ -78,6 +79,17 @@ final class InMemoryVehicleRepository implements VehicleRepository
      * @var array<int, Vehicle>
      */
     public array $vehicles = [];
+
+    public function findById(TenantId $tenantId, VehicleId $vehicleId): ?Vehicle
+    {
+        foreach ($this->vehicles as $vehicle) {
+            if ($vehicle->tenantId()->equals($tenantId) && $vehicle->id()->value === $vehicleId->value) {
+                return $vehicle;
+            }
+        }
+
+        return null;
+    }
 
     public function existsByPlate(TenantId $tenantId, VehiclePlate $plate): bool
     {

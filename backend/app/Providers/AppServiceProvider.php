@@ -31,7 +31,9 @@ use App\Modules\Inventory\Infrastructure\Persistence\Eloquent\Repositories\Eloqu
 use App\Modules\Shared\Application\Contracts\TransactionManager;
 use App\Modules\Shared\Infrastructure\Persistence\LaravelTransactionManager;
 use App\Modules\Tenant\Application\TenantContext;
+use App\Modules\Workshop\Domain\Repositories\ServiceOrderRepository;
 use App\Modules\Workshop\Domain\Repositories\VehicleRepository;
+use App\Modules\Workshop\Infrastructure\Persistence\Eloquent\Repositories\EloquentServiceOrderRepository;
 use App\Modules\Workshop\Infrastructure\Persistence\Eloquent\Repositories\EloquentVehicleRepository;
 use Illuminate\Support\ServiceProvider;
 
@@ -52,6 +54,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PasswordResetter::class, LaravelPasswordResetter::class);
         $this->app->bind(ProductRepository::class, EloquentProductRepository::class);
         $this->app->bind(VehicleRepository::class, EloquentVehicleRepository::class);
+        $this->app->bind(ServiceOrderRepository::class, EloquentServiceOrderRepository::class);
         $this->app->bind(InventoryItemRepository::class, EloquentInventoryItemRepository::class);
         $this->app->bind(StockMovementRepository::class, EloquentStockMovementRepository::class);
         $this->app->bind(MinimumStockAlertQuery::class, EloquentMinimumStockAlertQuery::class);
