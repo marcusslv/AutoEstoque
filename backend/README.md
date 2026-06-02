@@ -93,6 +93,18 @@ Rodar migrations:
 docker compose exec backend php artisan migrate
 ```
 
+Rodar seeders de desenvolvimento:
+
+```bash
+docker compose exec backend php artisan db:seed
+```
+
+Recriar banco local com migrations e seeders:
+
+```bash
+docker compose exec backend php artisan migrate:fresh --seed
+```
+
 Verificar status das migrations:
 
 ```bash
@@ -160,6 +172,34 @@ docker compose down -v
 ```
 
 Use `down -v` apenas quando quiser remover os dados locais.
+
+## Dados De Desenvolvimento
+
+O seeder padrao cria uma oficina demo com produtos, estoque, veiculos, usuarios por perfil e ordens de servico.
+
+Tenant demo:
+
+```text
+018f95f2-0f08-7f85-9b31-2d833a1a2000
+```
+
+Usuarios demo:
+
+| Perfil | E-mail | Senha |
+| --- | --- | --- |
+| owner | owner@autoestoque.test | password |
+| manager | manager@autoestoque.test | password |
+| admin | admin@autoestoque.test | password |
+| mechanic | mechanic@autoestoque.test | password |
+
+O dataset inclui:
+
+- 5 produtos.
+- 5 saldos de estoque.
+- 4 movimentacoes de estoque.
+- 2 veiculos.
+- 1 OS aberta.
+- 1 OS finalizada com baixa de estoque vinculada formalmente.
 
 ## Arquitetura
 
