@@ -1,8 +1,16 @@
-# Arquitetura Front-end - Nuxt
+# Arquitetura Front-end - Nuxt Com Atomic Design
 
-Este documento define a proposta inicial de arquitetura do front-end web do AutoEstoque usando Nuxt, Vue, Tailwind CSS e Shadcn Vue.
+Este documento define a arquitetura front-end do AutoEstoque usando Nuxt, Vue, TypeScript, Tailwind CSS, Shadcn Vue e Atomic Design.
 
-O objetivo e criar uma base simples, modular e facil de evoluir, mantendo alinhamento com a arquitetura do backend, que usa Clean Architecture, DDD e modulos por dominio.
+A proposta oficial para o front-end web e uma arquitetura hibrida:
+
+- **Atomic Design** para organizar componentes visuais reutilizaveis.
+- **Modulos por dominio** para organizar regras, services, composables, types e componentes especificos do AutoEstoque.
+
+Essa abordagem evita dois problemas comuns:
+
+- uma pasta `components` grande e dificil de manter;
+- um Atomic Design puro demais, onde componentes de negocio ficam sem contexto.
 
 ## 1. Objetivo Do Front-end Web
 
@@ -21,7 +29,7 @@ Ele deve permitir:
 - gerenciar usuarios da oficina;
 - respeitar permissoes por perfil.
 
-O aplicativo mobile continua sendo pensado para consulta rapida, leitura de codigo de barras e operacoes de campo. O web deve priorizar visao gerencial, operacao administrativa e fluxos mais completos.
+O web deve priorizar produtividade, clareza operacional e velocidade de uso. O foco nao e uma landing page, mas uma ferramenta de trabalho para oficinas.
 
 ## 2. Stack Recomendada
 
@@ -33,78 +41,46 @@ Tecnologias:
 - Tailwind CSS
 - Shadcn Vue
 - Pinia
-- ofetch ou `$fetch`
+- `$fetch`/ofetch
 
 Responsabilidades:
 
-- Nuxt: estrutura da aplicacao, rotas, layouts e SSR/SPA.
-- Vue: componentes e composicao de telas.
-- TypeScript: contratos e seguranca de tipos.
-- Tailwind: estilos utilitarios.
-- Shadcn Vue: componentes base de interface.
+- Nuxt: rotas, layouts, configuracao e estrutura da aplicacao.
+- Vue: componentes e composicao da interface.
+- TypeScript: contratos, tipos de dominio e seguranca de integracao.
+- Tailwind CSS: estilo utilitario.
+- Shadcn Vue: componentes base de UI.
 - Pinia: estado de sessao e estados compartilhados.
 - `$fetch`/ofetch: comunicacao HTTP com o backend.
 
-## 3. Principios De Arquitetura
+## 3. Visao Geral Da Arquitetura
 
-### 3.1 Modularidade Por Dominio
+Estrutura conceitual:
 
-A estrutura deve ser organizada por contexto de negocio, nao apenas por tipo tecnico.
+```text
+pages
+  -> modules
+    -> composables
+      -> services
+        -> shared/api
 
-Modulos principais:
+modules
+  -> templates
+    -> organisms
+      -> molecules
+        -> atoms
+```
 
-- `auth`
-- `dashboard`
-- `catalog`
-- `inventory`
-- `workshop`
-- `users`
+Regras:
 
-Cada modulo deve concentrar seus componentes, composables, services e types.
-
-### 3.2 Pages Finas
-
-As paginas Nuxt devem ser simples.
-
-Elas devem:
-
-- definir a rota;
-- aplicar middleware quando necessario;
-- montar o componente principal da tela;
-- evitar conter regra complexa de apresentacao.
-
-### 3.3 Cliente API Centralizado
-
-Toda comunicacao com o backend deve passar por um cliente HTTP central.
-
-Esse cliente deve:
-
-- aplicar `baseURL`;
-- anexar `Authorization: Bearer`;
-- tratar erros comuns;
-- padronizar respostas;
-- permitir tipagem por endpoint.
-
-### 3.4 Backend Como Fonte Da Verdade
-
-O front-end pode esconder menus e botoes por perfil, mas a seguranca real fica no backend.
-
-O front-end deve:
-
-- melhorar experiencia do usuario;
-- evitar acoes indisponiveis;
-- exibir mensagens claras para `403 Forbidden`.
-
-O backend deve:
-
-- validar token;
-- resolver tenant;
-- aplicar permissoes por perfil;
-- validar payloads.
+- `pages` devem ser finas.
+- `modules` conhecem o dominio do AutoEstoque.
+- `shared/api` concentra comunicacao HTTP.
+- `components/ui` concentra Atomic Design.
+- `components/layout/templates` concentra estruturas de tela.
+- atoms, molecules e organisms nao devem chamar API.
 
 ## 4. Estrutura De Pastas Recomendada
-
-Estrutura alvo:
 
 ```text
 frontend/
@@ -112,9 +88,13 @@ frontend/
     assets/
     components/
       ui/
+        atoms/
+        molecules/
+        organisms/
       layout/
+        templates/
+        shell/
       feedback/
-    composables/
     layouts/
     middleware/
     modules/
@@ -160,61 +140,430 @@ frontend/
       utils/
 ```
 
-## 5. Responsabilidades Das Pastas
+## 5. Atomic Design No AutoEstoque
 
-### 5.1 `components/ui`
+Atomic Design sera usado para a camada visual compartilhada.
 
-Componentes base vindos do Shadcn Vue ou wrappers internos.
+O objetivo nao e forcar todos os componentes da aplicacao dentro de `atoms`, `molecules` e `organisms`. Componentes que falam a linguagem do negocio devem ficar nos modulos.
 
-Exemplos:
+## 6. Atoms
 
-- `Button`
-- `Input`
-- `Select`
-- `Dialog`
-- `Table`
-- `Badge`
-- `DropdownMenu`
-- `Toast`
+Atoms sao os menores blocos de interface.
 
-Esses componentes nao devem conhecer regras do AutoEstoque.
+Caracteristicas:
 
-### 5.2 `components/layout`
-
-Componentes estruturais.
+- reutilizaveis;
+- sem regra de negocio;
+- sem chamada HTTP;
+- sem conhecimento de produto, OS, estoque ou usuario;
+- geralmente wrappers de componentes Shadcn Vue.
 
 Exemplos:
 
-- `AppShell`
-- `AppSidebar`
-- `AppHeader`
-- `AppBreadcrumb`
-- `UserMenu`
-- `MobileNavigation`
-
-### 5.3 `components/feedback`
-
-Componentes de estado e retorno visual.
-
-Exemplos:
-
-- `EmptyState`
-- `LoadingState`
-- `ErrorState`
-- `ForbiddenState`
-- `ConfirmDialog`
-
-### 5.4 `modules`
-
-Cada modulo representa um contexto de produto.
+```text
+components/ui/atoms/
+  AppButton.vue
+  AppInput.vue
+  AppLabel.vue
+  AppTextarea.vue
+  AppSelect.vue
+  AppBadge.vue
+  AppIconButton.vue
+  AppSpinner.vue
+  AppSeparator.vue
+  AppAvatar.vue
+```
 
 Exemplo:
+
+```vue
+<!-- components/ui/atoms/AppButton.vue -->
+<script setup lang="ts">
+type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost'
+
+withDefaults(defineProps<{
+  variant?: ButtonVariant
+  loading?: boolean
+  disabled?: boolean
+}>(), {
+  variant: 'primary',
+  loading: false,
+  disabled: false,
+})
+</script>
+
+<template>
+  <button :disabled="disabled || loading">
+    <AppSpinner v-if="loading" />
+    <slot />
+  </button>
+</template>
+```
+
+## 7. Molecules
+
+Molecules combinam atoms em pequenas unidades reutilizaveis.
+
+Caracteristicas:
+
+- podem ter uma pequena logica de apresentacao;
+- ainda nao conhecem regra de negocio;
+- podem ser usadas em varios modulos;
+- nao chamam API.
+
+Exemplos:
+
+```text
+components/ui/molecules/
+  FormField.vue
+  SearchInput.vue
+  DateRangeFilter.vue
+  StatusBadge.vue
+  MoneyDisplay.vue
+  ConfirmAction.vue
+  MetricCard.vue
+```
+
+Exemplo:
+
+```vue
+<!-- components/ui/molecules/SearchInput.vue -->
+<script setup lang="ts">
+defineProps<{
+  modelValue: string
+  placeholder?: string
+}>()
+
+defineEmits<{
+  'update:modelValue': [value: string]
+}>()
+</script>
+
+<template>
+  <div class="relative">
+    <AppInput
+      :model-value="modelValue"
+      :placeholder="placeholder ?? 'Buscar'"
+      @update:model-value="$emit('update:modelValue', $event)"
+    />
+  </div>
+</template>
+```
+
+## 8. Organisms
+
+Organisms sao blocos maiores de interface.
+
+Caracteristicas:
+
+- combinam atoms e molecules;
+- podem estruturar tabelas, filtros, dialogs e cabecalhos;
+- ainda devem evitar regra especifica do AutoEstoque;
+- podem ser parametrizados por props e slots.
+
+Exemplos:
+
+```text
+components/ui/organisms/
+  DataTable.vue
+  FilterToolbar.vue
+  PageHeader.vue
+  EntityFormDialog.vue
+  EmptyTableState.vue
+```
+
+Exemplo:
+
+```vue
+<!-- components/ui/organisms/PageHeader.vue -->
+<script setup lang="ts">
+defineProps<{
+  title: string
+  description?: string
+}>()
+</script>
+
+<template>
+  <header class="flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-xl font-semibold">
+        {{ title }}
+      </h1>
+      <p v-if="description" class="text-sm text-muted-foreground">
+        {{ description }}
+      </p>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <slot name="actions" />
+    </div>
+  </header>
+</template>
+```
+
+## 9. Templates
+
+Templates definem estrutura de pagina.
+
+Caracteristicas:
+
+- organizam slots e regioes;
+- nao carregam dados;
+- nao chamam API;
+- nao conhecem regras de dominio;
+- sao usados por pages e module components.
+
+Exemplos:
+
+```text
+components/layout/templates/
+  PublicPageTemplate.vue
+  AuthenticatedPageTemplate.vue
+  ListPageTemplate.vue
+  DetailPageTemplate.vue
+  DashboardPageTemplate.vue
+```
+
+Exemplo:
+
+```vue
+<!-- components/layout/templates/ListPageTemplate.vue -->
+<script setup lang="ts">
+defineProps<{
+  title: string
+  description?: string
+}>()
+</script>
+
+<template>
+  <section class="space-y-4">
+    <PageHeader :title="title" :description="description">
+      <template #actions>
+        <slot name="actions" />
+      </template>
+    </PageHeader>
+
+    <slot name="filters" />
+
+    <slot />
+  </section>
+</template>
+```
+
+## 10. Layout Shell
+
+O shell da aplicacao autenticada deve ficar separado dos templates.
+
+Exemplos:
+
+```text
+components/layout/shell/
+  AppShell.vue
+  AppSidebar.vue
+  AppHeader.vue
+  AppBreadcrumb.vue
+  UserMenu.vue
+```
+
+Responsabilidades:
+
+- navegacao principal;
+- menu por perfil;
+- area de usuario;
+- estrutura responsiva;
+- renderizacao do conteudo autenticado.
+
+## 11. Feedback Components
+
+Componentes de feedback podem ficar fora da hierarquia Atomic para facilitar uso em qualquer camada.
+
+Exemplos:
+
+```text
+components/feedback/
+  LoadingState.vue
+  ErrorState.vue
+  EmptyState.vue
+  ForbiddenState.vue
+  ConfirmDialog.vue
+```
+
+Esses componentes devem ser genericos.
+
+## 12. Pages
+
+Pages representam rotas Nuxt.
+
+Regras:
+
+- devem ser pequenas;
+- devem aplicar layout e middleware;
+- devem obter parametros de rota;
+- devem delegar regra para componentes do modulo.
+
+Exemplo:
+
+```vue
+<!-- pages/service-orders/[id].vue -->
+<script setup lang="ts">
+definePageMeta({
+  layout: 'authenticated',
+  middleware: ['auth', 'workshop-role'],
+})
+
+const route = useRoute()
+const serviceOrderId = computed(() => String(route.params.id))
+</script>
+
+<template>
+  <ServiceOrderDetailsPage :service-order-id="serviceOrderId" />
+</template>
+```
+
+## 13. Modules
+
+Modules organizam tudo que e especifico de um dominio do AutoEstoque.
+
+Modulos principais:
+
+```text
+modules/
+  auth/
+  dashboard/
+  catalog/
+  inventory/
+  workshop/
+  users/
+```
+
+Cada modulo pode ter:
+
+```text
+components/
+composables/
+services/
+types/
+stores/
+```
+
+Nem todo modulo precisa de todas as pastas.
+
+## 14. Regra De Decisao: Atomic Ou Module?
+
+### Vai Para Atomic Design Quando
+
+- pode ser usado por varios dominios;
+- nao conhece entidade de negocio;
+- nao chama API;
+- nao sabe o que e produto, veiculo, OS, estoque ou usuario;
+- representa uma estrutura visual reutilizavel.
+
+Exemplos:
+
+- `AppButton`
+- `SearchInput`
+- `DataTable`
+- `PageHeader`
+- `ListPageTemplate`
+
+### Vai Para Module Quando
+
+- conhece entidade do AutoEstoque;
+- usa tipos como `Product`, `Vehicle`, `ServiceOrder`;
+- executa acao de negocio;
+- chama service do dominio;
+- possui texto especifico de negocio.
+
+Exemplos:
+
+- `ProductForm`
+- `StockTable`
+- `ServiceOrderDetailsPage`
+- `AddPartDialog`
+- `RegisterEntryDialog`
+- `UserForm`
+
+## 15. Modulo Auth
+
+Responsavel por:
+
+- login;
+- logout;
+- persistencia de token;
+- usuario autenticado;
+- perfil atual;
+- protecao de rotas.
+
+Estrutura sugerida:
+
+```text
+modules/auth/
+  components/
+    LoginForm.vue
+  composables/
+    useAuth.ts
+  services/
+    authApi.ts
+  stores/
+    authStore.ts
+  types/
+    auth.ts
+```
+
+Rotas de API:
+
+```text
+POST /api/v1/auth/login
+POST /api/v1/auth/logout
+```
+
+## 16. Modulo Dashboard
+
+Responsavel por:
+
+- indicadores gerais;
+- movimentacoes recentes;
+- produtos mais consumidos.
+
+Estrutura sugerida:
+
+```text
+modules/dashboard/
+  components/
+    DashboardMetrics.vue
+    RecentMovements.vue
+    MostConsumedProducts.vue
+  composables/
+    useDashboard.ts
+  services/
+    dashboardApi.ts
+  types/
+    dashboard.ts
+```
+
+Rotas de API:
+
+```text
+GET /api/v1/dashboard
+GET /api/v1/dashboard/most-consumed-products
+```
+
+## 17. Modulo Catalog
+
+Responsavel por:
+
+- cadastro de produtos;
+- edicao de produtos;
+- consulta de estoque.
+
+Estrutura sugerida:
 
 ```text
 modules/catalog/
   components/
     ProductForm.vue
     ProductTable.vue
+    StockTable.vue
     StockStatusBadge.vue
   composables/
     useProducts.ts
@@ -226,133 +575,103 @@ modules/catalog/
     stock.ts
 ```
 
-### 5.5 `shared/api`
-
-Infraestrutura HTTP compartilhada.
-
-Arquivos sugeridos:
+Rotas de API:
 
 ```text
-shared/api/
-  apiClient.ts
-  apiErrors.ts
-  apiTypes.ts
+POST /api/v1/products
+PATCH /api/v1/products/{product}
+GET /api/v1/stock
 ```
 
-### 5.6 `shared/permissions`
+## 18. Modulo Inventory
 
-Matriz de permissoes usada para menus, rotas e botoes.
+Responsavel por:
 
-Arquivos sugeridos:
+- entradas;
+- saidas;
+- ajustes;
+- historico;
+- alertas.
+
+Estrutura sugerida:
 
 ```text
-shared/permissions/
-  roles.ts
-  permissions.ts
+modules/inventory/
+  components/
+    MovementHistoryTable.vue
+    RegisterEntryDialog.vue
+    RegisterOutputDialog.vue
+    RegisterAdjustmentDialog.vue
+    InventoryAlertsList.vue
+    MovementOriginLink.vue
+  composables/
+    useMovements.ts
+    useInventoryAlerts.ts
+  services/
+    inventoryApi.ts
+  types/
+    movement.ts
+    alert.ts
 ```
 
-## 6. Modulos Do Produto
+Rotas de API:
 
-### 6.1 Auth
-
-Responsavel por:
-
-- login;
-- logout;
-- persistencia do token;
-- usuario autenticado;
-- perfil atual;
-- protecao de rotas.
-
-Rotas relacionadas:
-
-- `POST /api/v1/auth/login`
-- `POST /api/v1/auth/logout`
-
-Estado principal:
-
-```ts
-type AuthUser = {
-  id: string
-  tenant_id: string
-  name: string
-  email: string
-  role: Role
-}
+```text
+POST /api/v1/inventory/entries
+POST /api/v1/inventory/outputs
+POST /api/v1/inventory/adjustments
+GET /api/v1/inventory/movements
+GET /api/v1/inventory/alerts/minimum-stock
+GET /api/v1/inventory/alerts/zero-stock
 ```
 
-### 6.2 Dashboard
+## 19. Modulo Workshop
 
 Responsavel por:
 
-- indicadores gerais;
-- produtos abaixo do minimo;
-- produtos zerados;
-- valor total em estoque;
-- movimentacoes recentes;
-- produtos mais consumidos.
+- veiculos;
+- ordens de servico;
+- pecas da OS;
+- finalizacao com baixa automatica.
 
-Rotas relacionadas:
+Estrutura sugerida:
 
-- `GET /api/v1/dashboard`
-- `GET /api/v1/dashboard/most-consumed-products`
+```text
+modules/workshop/
+  components/
+    VehicleForm.vue
+    VehicleTable.vue
+    ServiceOrderTable.vue
+    ServiceOrderForm.vue
+    ServiceOrderDetailsPage.vue
+    ServiceOrderSummary.vue
+    ServiceOrderPartsTable.vue
+    AddPartDialog.vue
+    FinishServiceOrderDialog.vue
+  composables/
+    useVehicles.ts
+    useServiceOrders.ts
+    useServiceOrderDetails.ts
+  services/
+    workshopApi.ts
+  types/
+    vehicle.ts
+    serviceOrder.ts
+```
 
-### 6.3 Catalog
+Rotas de API:
 
-Responsavel por:
+```text
+GET /api/v1/vehicles
+POST /api/v1/vehicles
+GET /api/v1/service-orders
+POST /api/v1/service-orders
+GET /api/v1/service-orders/{serviceOrder}
+POST /api/v1/service-orders/{serviceOrder}/parts
+PATCH /api/v1/service-orders/{serviceOrder}/finish
+```
 
-- cadastro de produtos;
-- edicao de produtos;
-- consulta de estoque.
-
-Rotas relacionadas:
-
-- `POST /api/v1/products`
-- `PATCH /api/v1/products/{product}`
-- `GET /api/v1/stock`
-
-### 6.4 Inventory
-
-Responsavel por:
-
-- entrada de estoque;
-- saida de estoque;
-- ajuste manual;
-- historico de movimentacoes;
-- alertas de minimo e zerado.
-
-Rotas relacionadas:
-
-- `POST /api/v1/inventory/entries`
-- `POST /api/v1/inventory/outputs`
-- `POST /api/v1/inventory/adjustments`
-- `GET /api/v1/inventory/movements`
-- `GET /api/v1/inventory/alerts/minimum-stock`
-- `GET /api/v1/inventory/alerts/zero-stock`
-
-### 6.5 Workshop
-
-Responsavel por:
-
-- cadastro de veiculos;
-- listagem de veiculos;
-- criacao de OS;
-- listagem de OS;
-- detalhe da OS;
-- adicionar pecas a OS;
-- finalizar OS com baixa automatica.
-
-Rotas relacionadas:
-
-- `GET /api/v1/vehicles`
-- `POST /api/v1/vehicles`
-- `GET /api/v1/service-orders`
-- `POST /api/v1/service-orders`
-- `GET /api/v1/service-orders/{serviceOrder}`
-- `POST /api/v1/service-orders/{serviceOrder}/parts`
-- `PATCH /api/v1/service-orders/{serviceOrder}/finish`
-
-### 6.6 Users
+## 20. Modulo Users
 
 Responsavel por:
 
@@ -361,159 +680,46 @@ Responsavel por:
 - editar usuario;
 - inativar usuario.
 
-Rotas relacionadas:
-
-- `GET /api/v1/users`
-- `POST /api/v1/users`
-- `PATCH /api/v1/users/{user}`
-- `PATCH /api/v1/users/{user}/deactivate`
-
-## 7. Rotas Do Front-end
-
-Rotas iniciais recomendadas:
+Estrutura sugerida:
 
 ```text
-/login
-/dashboard
-/products
-/stock
-/inventory/movements
-/inventory/alerts
-/vehicles
-/service-orders
-/service-orders/:id
-/users
+modules/users/
+  components/
+    UserTable.vue
+    UserForm.vue
+    DeactivateUserDialog.vue
+    RoleBadge.vue
+  composables/
+    useUsers.ts
+  services/
+    usersApi.ts
+  types/
+    user.ts
 ```
 
-Possivel estrutura Nuxt:
+Rotas de API:
 
 ```text
-pages/
-  login.vue
-  dashboard.vue
-  products/
-    index.vue
-  stock.vue
-  inventory/
-    movements.vue
-    alerts.vue
-  vehicles/
-    index.vue
-  service-orders/
-    index.vue
-    [id].vue
-  users/
-    index.vue
+GET /api/v1/users
+POST /api/v1/users
+PATCH /api/v1/users/{user}
+PATCH /api/v1/users/{user}/deactivate
 ```
 
-## 8. Layouts
+## 21. Shared API
 
-### 8.1 Layout Publico
+Toda comunicacao HTTP deve passar pelo cliente central.
 
-Usado por:
-
-- `/login`
-
-Caracteristicas:
-
-- sem sidebar;
-- conteudo centralizado;
-- foco em formulario.
-
-### 8.2 Layout Autenticado
-
-Usado pelas rotas internas.
-
-Elementos:
-
-- sidebar principal;
-- header;
-- menu do usuario;
-- breadcrumb;
-- area de conteudo;
-- suporte responsivo mobile.
-
-## 9. Autenticacao
-
-Fluxo:
-
-1. Usuario acessa `/login`.
-2. Front envia email e senha para `POST /api/v1/auth/login`.
-3. Backend retorna `access_token` e dados do usuario.
-4. Front persiste token e usuario.
-5. Front redireciona para `/dashboard`.
-6. Cliente API envia `Authorization: Bearer {token}`.
-7. Logout chama `POST /api/v1/auth/logout`.
-8. Front limpa sessao local.
-
-### 9.1 Persistencia De Sessao
-
-Opcoes:
-
-- cookie HTTP-only, se houver suporte server-side futuro;
-- cookie client-side;
-- localStorage.
-
-Para o MVP web, pode iniciar com cookie client-side ou localStorage, desde que o token seja removido no logout.
-
-Recomendacao inicial:
-
-- usar cookie via composable do Nuxt para facilitar middleware;
-- armazenar dados do usuario em Pinia;
-- reidratar estado ao carregar a aplicacao.
-
-## 10. Permissoes Por Perfil
-
-Roles suportados:
-
-```ts
-type Role = 'owner' | 'manager' | 'admin' | 'mechanic'
-```
-
-Matriz inicial:
-
-```ts
-const permissions = {
-  backoffice: ['owner', 'manager', 'admin'],
-  workshop: ['owner', 'manager', 'admin', 'mechanic'],
-}
-```
-
-Backoffice:
-
-- usuarios;
-- dashboard;
-- produtos;
-- movimentacoes manuais;
-- historico de movimentacoes;
-- alertas.
-
-Workshop:
-
-- estoque para consulta;
-- veiculos;
-- ordens de servico;
-- adicionar pecas;
-- finalizar OS.
-
-Uso no front:
-
-- proteger rotas;
-- esconder menus;
-- esconder botoes;
-- exibir estado de acesso negado.
-
-O backend continua sendo a fonte real de autorizacao.
-
-## 11. Cliente API
-
-Arquivo sugerido:
+Estrutura:
 
 ```text
-shared/api/apiClient.ts
+shared/api/
+  apiClient.ts
+  apiErrors.ts
+  apiTypes.ts
 ```
 
-Exemplo conceitual:
+Exemplo:
 
 ```ts
 export function useApiClient() {
@@ -540,36 +746,196 @@ export function useApiClient() {
 }
 ```
 
-## 12. Tratamento De Erros
+## 22. Services Por Modulo
+
+Cada modulo deve encapsular chamadas HTTP em um service.
+
+Exemplo:
+
+```ts
+// modules/workshop/services/workshopApi.ts
+export function useWorkshopApi() {
+  const api = useApiClient()
+
+  return {
+    listServiceOrders(params?: ListServiceOrdersParams) {
+      return api<ServiceOrderListResponse>('/service-orders', { params })
+    },
+
+    showServiceOrder(serviceOrderId: string) {
+      return api<ServiceOrderDetailsResponse>(`/service-orders/${serviceOrderId}`)
+    },
+
+    finishServiceOrder(serviceOrderId: string) {
+      return api<FinishServiceOrderResponse>(`/service-orders/${serviceOrderId}/finish`, {
+        method: 'PATCH',
+      })
+    },
+  }
+}
+```
+
+## 23. Composables Por Modulo
+
+Composables orquestram estado de tela e chamadas de service.
+
+Eles podem:
+
+- controlar loading;
+- controlar erro;
+- aplicar filtros;
+- chamar actions;
+- expor dados prontos para componentes.
+
+Exemplo:
+
+```ts
+export function useServiceOrderDetails(serviceOrderId: string) {
+  const api = useWorkshopApi()
+
+  const serviceOrder = ref<ServiceOrderDetails | null>(null)
+  const loading = ref(false)
+  const error = ref<ApiError | null>(null)
+
+  async function refresh() {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await api.showServiceOrder(serviceOrderId)
+      serviceOrder.value = response.data
+    } catch (err) {
+      error.value = normalizeApiError(err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  onMounted(refresh)
+
+  return {
+    serviceOrder,
+    loading,
+    error,
+    refresh,
+  }
+}
+```
+
+## 24. Autenticacao
+
+Fluxo:
+
+1. Usuario acessa `/login`.
+2. Front envia credenciais para `POST /api/v1/auth/login`.
+3. Backend retorna token e usuario.
+4. Front persiste token e usuario.
+5. Cliente API passa a enviar `Authorization: Bearer`.
+6. Logout chama `POST /api/v1/auth/logout`.
+7. Front limpa sessao.
+
+Arquivos:
+
+```text
+modules/auth/stores/authStore.ts
+modules/auth/services/authApi.ts
+middleware/auth.ts
+middleware/guest.ts
+```
+
+## 25. Permissoes Por Perfil
+
+Roles:
+
+```ts
+type Role = 'owner' | 'manager' | 'admin' | 'mechanic'
+```
+
+Matriz:
+
+```ts
+const permissions = {
+  backoffice: ['owner', 'manager', 'admin'],
+  workshop: ['owner', 'manager', 'admin', 'mechanic'],
+}
+```
+
+Uso:
+
+- filtrar menu;
+- proteger rotas;
+- esconder botoes;
+- exibir `ForbiddenState`;
+- ainda tratar `403` vindo do backend.
+
+Arquivos:
+
+```text
+shared/permissions/roles.ts
+shared/permissions/permissions.ts
+middleware/role.ts
+```
+
+## 26. Rotas Do Front-end
+
+Rotas iniciais:
+
+```text
+/login
+/dashboard
+/products
+/stock
+/inventory/movements
+/inventory/alerts
+/vehicles
+/service-orders
+/service-orders/:id
+/users
+```
+
+Estrutura:
+
+```text
+pages/
+  login.vue
+  dashboard.vue
+  products/
+    index.vue
+  stock.vue
+  inventory/
+    movements.vue
+    alerts.vue
+  vehicles/
+    index.vue
+  service-orders/
+    index.vue
+    [id].vue
+  users/
+    index.vue
+```
+
+## 27. Tratamento De Erros
 
 Erros principais:
 
-- `401 Unauthorized`: token ausente, invalido ou expirado.
-- `403 Forbidden`: usuario sem permissao.
-- `404 Not Found`: recurso nao encontrado.
-- `409 Conflict`: conflito de regra de negocio.
-- `422 Unprocessable Entity`: erro de validacao.
-- `500 Internal Server Error`: erro inesperado.
+- `401 Unauthorized`: limpar sessao e redirecionar para login.
+- `403 Forbidden`: exibir acesso negado.
+- `404 Not Found`: exibir recurso nao encontrado.
+- `409 Conflict`: exibir conflito de regra de negocio.
+- `422 Unprocessable Entity`: mapear erros para formulario.
+- `500 Internal Server Error`: exibir erro generico.
 
-Recomendacao:
+## 28. Tipagem
 
-- `401`: limpar sessao e redirecionar para login.
-- `403`: mostrar tela ou mensagem de acesso negado.
-- `422`: mapear erros para formulario.
-- `409`: mostrar mensagem de regra de negocio.
-- `500`: mostrar erro generico com opcao de tentar novamente.
-
-## 13. Tipagem Dos Contratos
-
-Os tipos devem refletir a OpenAPI:
+A OpenAPI do backend e o contrato de referencia:
 
 ```text
 backend/docs/openapi.yaml
 ```
 
-Para o MVP, pode criar tipos manualmente por modulo.
+Para o MVP, os tipos podem ser criados manualmente por modulo.
 
-Depois, pode evoluir para geracao automatica a partir da OpenAPI.
+Depois, pode evoluir para geracao automatica.
 
 Exemplo:
 
@@ -589,213 +955,95 @@ export type Product = {
 }
 ```
 
-## 14. Padrao De Services
-
-Cada modulo deve ter um service para chamadas HTTP.
-
-Exemplo:
-
-```text
-modules/catalog/services/catalogApi.ts
-```
-
-Exemplo conceitual:
-
-```ts
-export function useCatalogApi() {
-  const api = useApiClient()
-
-  return {
-    listStock(params?: ListStockParams) {
-      return api<StockListResponse>('/stock', { params })
-    },
-
-    createProduct(payload: CreateProductPayload) {
-      return api<ProductResponse>('/products', {
-        method: 'POST',
-        body: payload,
-      })
-    },
-  }
-}
-```
-
-## 15. Padrao De Composables
-
-Composables devem orquestrar estado de tela e chamadas de service.
-
-Exemplo:
-
-```text
-modules/catalog/composables/useStock.ts
-```
-
-Responsabilidades:
-
-- carregar dados;
-- controlar loading;
-- controlar erro;
-- aplicar filtros;
-- expor acoes para componentes.
-
-Eles nao devem conter layout ou markup.
-
-## 16. Formularios
-
-Recomendacao:
-
-- usar componentes Shadcn Vue;
-- validar no front apenas o necessario para UX;
-- manter validacao real no backend;
-- mapear erros `422` por campo.
-
-Padrao de resposta esperada:
-
-```json
-{
-  "message": "The given data was invalid.",
-  "errors": {
-    "name": ["The name field is required."]
-  }
-}
-```
-
-## 17. Design Da Interface
+## 29. Design Da Interface
 
 O AutoEstoque e uma ferramenta operacional.
 
 Direcao visual:
 
 - interface limpa;
-- densidade moderada de informacao;
+- densidade moderada;
 - tabelas escaneaveis;
-- botoes de acao claros;
+- filtros objetivos;
+- dialogs para acoes rapidas;
 - badges para status;
-- filtros no topo das listagens;
-- dialogs para criacao rapida;
-- telas focadas em produtividade.
+- feedback claro para erros e sucesso;
+- menus orientados por perfil.
 
 Evitar:
 
-- layout de landing page dentro do app;
-- excesso de cards decorativos;
+- landing page dentro do app;
 - hero sections;
+- excesso de cards decorativos;
 - textos explicativos longos;
-- paleta visual de uma unica cor.
+- componentes visualmente bonitos mas pouco eficientes.
 
-## 18. Componentes-Chave Por Tela
+## 30. Exemplo De Tela: Detalhe Da OS
 
-### Login
-
-- formulario de email e senha;
-- estado de erro;
-- estado de loading.
-
-### Dashboard
-
-- indicadores principais;
-- movimentacoes recentes;
-- produtos mais consumidos;
-- alertas resumidos.
-
-### Produtos
-
-- tabela de produtos;
-- busca;
-- formulario de cadastro;
-- formulario de edicao;
-- badges de estoque.
-
-### Estoque
-
-- tabela de estoque;
-- busca;
-- indicador de saldo;
-- status `available`, `minimum`, `zero`.
-
-### Movimentacoes
-
-- filtros;
-- historico;
-- origem da movimentacao;
-- link para OS quando houver vinculo.
-
-### Veiculos
-
-- listagem;
-- busca;
-- cadastro.
-
-### Ordens De Servico
-
-- listagem por status;
-- busca por cliente, placa ou servico;
-- detalhe da OS;
-- pecas adicionadas;
-- movimentacoes geradas;
-- acao de finalizar.
-
-### Usuarios
-
-- listagem;
-- criacao;
-- edicao de perfil;
-- inativacao.
-
-## 19. Sequencia Recomendada De Implementacao
-
-1. Criar projeto Nuxt.
-2. Configurar Tailwind e Shadcn Vue.
-3. Criar layout publico e autenticado.
-4. Criar cliente API central.
-5. Implementar auth store.
-6. Implementar login.
-7. Implementar middleware de autenticacao.
-8. Implementar matriz de permissoes.
-9. Implementar dashboard.
-10. Implementar estoque.
-11. Implementar produtos.
-12. Implementar veiculos.
-13. Implementar ordens de servico.
-14. Implementar usuarios.
-15. Implementar historico e alertas.
-
-## 20. Variaveis De Ambiente
-
-Variaveis recomendadas:
-
-```env
-NUXT_PUBLIC_API_BASE_URL=http://localhost:8080/api/v1
-```
-
-## 21. Relacao Com OpenAPI
-
-A OpenAPI do backend deve ser usada como contrato de referencia:
+Fluxo:
 
 ```text
-backend/docs/openapi.yaml
+pages/service-orders/[id].vue
+  -> modules/workshop/components/ServiceOrderDetailsPage.vue
+    -> modules/workshop/composables/useServiceOrderDetails.ts
+      -> modules/workshop/services/workshopApi.ts
+        -> shared/api/apiClient.ts
+
+ServiceOrderDetailsPage.vue
+  -> DetailPageTemplate.vue
+    -> PageHeader.vue
+    -> ServiceOrderSummary.vue
+    -> ServiceOrderPartsTable.vue
+    -> AddPartDialog.vue
+    -> FinishServiceOrderDialog.vue
 ```
 
-Uso recomendado:
+Nesse exemplo:
 
-- consultar contratos durante implementacao;
-- importar no Postman/Insomnia;
-- futuramente gerar types TypeScript.
+- `DetailPageTemplate` e template.
+- `PageHeader` e organism.
+- `AppButton` e atom.
+- `ServiceOrderSummary` e componente de dominio.
+- `ServiceOrderPartsTable` e componente de dominio.
+- `AddPartDialog` e componente de dominio.
+- `FinishServiceOrderDialog` e componente de dominio.
 
-## 22. Proximo Passo
+## 31. Sequencia De Implementacao
 
-O proximo passo recomendado e criar o setup do projeto Nuxt dentro da pasta:
+1. Setup Nuxt.
+2. Tailwind.
+3. Shadcn Vue.
+4. Pinia.
+5. Estrutura Atomic Design.
+6. Layout publico e autenticado.
+7. Cliente API.
+8. Auth.
+9. Permissoes.
+10. Dashboard.
+11. Estoque.
+12. Produtos.
+13. Veiculos.
+14. Ordens de servico.
+15. Movimentacoes.
+16. Alertas.
+17. Usuarios.
+18. Refinamentos de UX.
+19. Testes.
+
+## 32. Proximo Passo
+
+O proximo passo pratico e iniciar o setup do front-end em:
 
 ```text
 frontend/
 ```
 
-Primeira entrega pratica:
+Primeira entrega:
 
-- app Nuxt rodando;
+- Nuxt rodando;
 - Tailwind configurado;
 - Shadcn Vue configurado;
-- tela de login;
-- cliente API;
-- autenticacao integrada ao backend;
-- layout autenticado basico.
+- Pinia configurado;
+- estrutura Atomic Design criada;
+- tela de login inicial;
+- cliente API central.
