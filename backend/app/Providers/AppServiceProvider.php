@@ -4,8 +4,10 @@ namespace App\Providers;
 
 use App\Modules\Catalog\Domain\Repositories\ProductRepository;
 use App\Modules\Catalog\Infrastructure\Persistence\Eloquent\Repositories\EloquentProductRepository;
+use App\Modules\Dashboard\Application\UseCases\ListMostConsumedProducts\Contracts\MostConsumedProductsQuery;
 use App\Modules\Dashboard\Application\UseCases\ViewDashboard\Contracts\DashboardQuery;
 use App\Modules\Dashboard\Infrastructure\Persistence\Eloquent\Queries\EloquentDashboardQuery;
+use App\Modules\Dashboard\Infrastructure\Persistence\Eloquent\Queries\EloquentMostConsumedProductsQuery;
 use App\Modules\Inventory\Application\UseCases\GenerateMinimumStockAlerts\Contracts\MinimumStockAlertQuery;
 use App\Modules\Inventory\Application\UseCases\GenerateZeroStockAlerts\Contracts\ZeroStockAlertQuery;
 use App\Modules\Inventory\Application\UseCases\ListStockMovementHistory\Contracts\StockMovementHistoryQuery;
@@ -30,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(TenantContext::class);
         $this->app->bind(DashboardQuery::class, EloquentDashboardQuery::class);
+        $this->app->bind(MostConsumedProductsQuery::class, EloquentMostConsumedProductsQuery::class);
         $this->app->bind(ProductRepository::class, EloquentProductRepository::class);
         $this->app->bind(InventoryItemRepository::class, EloquentInventoryItemRepository::class);
         $this->app->bind(StockMovementRepository::class, EloquentStockMovementRepository::class);

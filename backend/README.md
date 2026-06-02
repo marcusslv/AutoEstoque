@@ -233,6 +233,7 @@ Rotas disponiveis na fundacao tecnica:
 GET /api/v1/health
 GET /api/v1/context/tenant
 GET /api/v1/dashboard
+GET /api/v1/dashboard/most-consumed-products
 GET /api/v1/stock
 GET /api/v1/inventory/alerts/minimum-stock
 GET /api/v1/inventory/alerts/zero-stock
@@ -264,6 +265,21 @@ Indicadores retornados:
 - valor total em estoque.
 - movimentacoes do dia.
 - ultimas movimentacoes do dia.
+
+### Consultar Produtos Mais Consumidos
+
+```http
+GET /api/v1/dashboard/most-consumed-products
+X-Tenant-Id: {tenant_id}
+```
+
+Filtros aceitos:
+
+- `period_from`: inicio do periodo. Quando omitido, usa o inicio do mes atual.
+- `period_to`: fim do periodo. Quando omitido, usa a data atual.
+- `limit`: entre `1` e `100`.
+
+O ranking considera apenas movimentacoes com `direction` igual a `output`.
 
 ### Gerar Alertas De Estoque Minimo
 
@@ -513,6 +529,7 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - UC11 - Gerar alerta de estoque zerado.
 - UC12 - Visualizar dashboard.
 - UC17 - Consultar historico de movimentacoes.
+- UC18 - Consultar produtos mais consumidos.
 - Migration da tabela `products`.
 - Migrations das tabelas `inventory_items` e `stock_movements`.
 - Modulo `Catalog` inicial.
