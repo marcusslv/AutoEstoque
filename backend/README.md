@@ -231,6 +231,7 @@ Rotas disponiveis na fundacao tecnica:
 
 ```text
 GET /api/v1/health
+POST /api/v1/auth/login
 GET /api/v1/context/tenant
 GET /api/v1/dashboard
 GET /api/v1/dashboard/most-consumed-products
@@ -244,6 +245,45 @@ POST /api/v1/inventory/outputs
 POST /api/v1/products
 PATCH /api/v1/products/{product}
 ```
+
+### Autenticar Usuario
+
+```http
+POST /api/v1/auth/login
+Content-Type: application/json
+```
+
+Payload:
+
+```json
+{
+  "email": "admin@oficina.com",
+  "password": "secret",
+  "token_name": "mobile"
+}
+```
+
+Resposta:
+
+```json
+{
+  "data": {
+    "access_token": "token-opaco",
+    "token_type": "Bearer",
+    "user": {
+      "id": "1",
+      "name": "Admin Oficina",
+      "email": "admin@oficina.com",
+      "role": "admin"
+    },
+    "tenant": {
+      "id": "uuid-do-tenant"
+    }
+  }
+}
+```
+
+Nesta versao, o token e persistido em `user_access_tokens` usando hash SHA-256. As rotas existentes ainda usam `X-Tenant-Id` ate a autenticacao ser integrada ao middleware de contexto.
 
 ### Visualizar Dashboard
 
@@ -530,6 +570,9 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - UC12 - Visualizar dashboard.
 - UC17 - Consultar historico de movimentacoes.
 - UC18 - Consultar produtos mais consumidos.
+- UC01 - Autenticar usuario, versao inicial com token de API.
+- Migration de campos de identidade em `users`.
+- Migration da tabela `user_access_tokens`.
 - Migration da tabela `products`.
 - Migrations das tabelas `inventory_items` e `stock_movements`.
 - Modulo `Catalog` inicial.

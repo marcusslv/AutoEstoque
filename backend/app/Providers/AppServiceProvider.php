@@ -8,6 +8,10 @@ use App\Modules\Dashboard\Application\UseCases\ListMostConsumedProducts\Contract
 use App\Modules\Dashboard\Application\UseCases\ViewDashboard\Contracts\DashboardQuery;
 use App\Modules\Dashboard\Infrastructure\Persistence\Eloquent\Queries\EloquentDashboardQuery;
 use App\Modules\Dashboard\Infrastructure\Persistence\Eloquent\Queries\EloquentMostConsumedProductsQuery;
+use App\Modules\Identity\Application\UseCases\AuthenticateUser\Contracts\AccessTokenIssuer;
+use App\Modules\Identity\Application\UseCases\AuthenticateUser\Contracts\CredentialsVerifier;
+use App\Modules\Identity\Infrastructure\Persistence\Eloquent\EloquentAccessTokenIssuer;
+use App\Modules\Identity\Infrastructure\Persistence\Eloquent\EloquentCredentialsVerifier;
 use App\Modules\Inventory\Application\UseCases\GenerateMinimumStockAlerts\Contracts\MinimumStockAlertQuery;
 use App\Modules\Inventory\Application\UseCases\GenerateZeroStockAlerts\Contracts\ZeroStockAlertQuery;
 use App\Modules\Inventory\Application\UseCases\ListStockMovementHistory\Contracts\StockMovementHistoryQuery;
@@ -33,6 +37,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(TenantContext::class);
         $this->app->bind(DashboardQuery::class, EloquentDashboardQuery::class);
         $this->app->bind(MostConsumedProductsQuery::class, EloquentMostConsumedProductsQuery::class);
+        $this->app->bind(CredentialsVerifier::class, EloquentCredentialsVerifier::class);
+        $this->app->bind(AccessTokenIssuer::class, EloquentAccessTokenIssuer::class);
         $this->app->bind(ProductRepository::class, EloquentProductRepository::class);
         $this->app->bind(InventoryItemRepository::class, EloquentInventoryItemRepository::class);
         $this->app->bind(StockMovementRepository::class, EloquentStockMovementRepository::class);
