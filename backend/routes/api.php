@@ -6,6 +6,8 @@ use App\Modules\Catalog\Interfaces\Http\Controllers\UpdateProductController;
 use App\Modules\Dashboard\Interfaces\Http\Controllers\ListMostConsumedProductsController;
 use App\Modules\Dashboard\Interfaces\Http\Controllers\ViewDashboardController;
 use App\Modules\Identity\Interfaces\Http\Controllers\AuthenticateUserController;
+use App\Modules\Identity\Interfaces\Http\Controllers\RequestPasswordResetController;
+use App\Modules\Identity\Interfaces\Http\Controllers\ResetPasswordController;
 use App\Modules\Inventory\Interfaces\Http\Controllers\GenerateMinimumStockAlertsController;
 use App\Modules\Inventory\Interfaces\Http\Controllers\GenerateZeroStockAlertsController;
 use App\Modules\Inventory\Interfaces\Http\Controllers\ListStockMovementHistoryController;
@@ -22,6 +24,8 @@ Route::prefix('v1')->group(function (): void {
     ]);
 
     Route::post('/auth/login', AuthenticateUserController::class);
+    Route::post('/auth/forgot-password', RequestPasswordResetController::class);
+    Route::post('/auth/reset-password', ResetPasswordController::class);
 
     Route::middleware('tenant')->group(function (): void {
         Route::get('/context/tenant', function (TenantContext $tenantContext) {

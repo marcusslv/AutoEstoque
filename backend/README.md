@@ -232,6 +232,8 @@ Rotas disponiveis na fundacao tecnica:
 ```text
 GET /api/v1/health
 POST /api/v1/auth/login
+POST /api/v1/auth/forgot-password
+POST /api/v1/auth/reset-password
 GET /api/v1/context/tenant
 GET /api/v1/dashboard
 GET /api/v1/dashboard/most-consumed-products
@@ -284,6 +286,39 @@ Resposta:
 ```
 
 Nesta versao, o token e persistido em `user_access_tokens` usando hash SHA-256. As rotas existentes ainda usam `X-Tenant-Id` ate a autenticacao ser integrada ao middleware de contexto.
+
+### Recuperar Senha
+
+Solicitar recuperacao:
+
+```http
+POST /api/v1/auth/forgot-password
+Content-Type: application/json
+```
+
+```json
+{
+  "email": "admin@oficina.com"
+}
+```
+
+A resposta e generica e nao revela se o e-mail existe.
+
+Redefinir senha:
+
+```http
+POST /api/v1/auth/reset-password
+Content-Type: application/json
+```
+
+```json
+{
+  "email": "admin@oficina.com",
+  "token": "token-recebido-por-email",
+  "password": "new-secret",
+  "password_confirmation": "new-secret"
+}
+```
 
 ### Visualizar Dashboard
 
@@ -571,6 +606,7 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - UC17 - Consultar historico de movimentacoes.
 - UC18 - Consultar produtos mais consumidos.
 - UC01 - Autenticar usuario, versao inicial com token de API.
+- UC02 - Recuperar senha.
 - Migration de campos de identidade em `users`.
 - Migration da tabela `user_access_tokens`.
 - Migration da tabela `products`.
