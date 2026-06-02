@@ -251,6 +251,7 @@ POST /api/v1/inventory/outputs
 POST /api/v1/products
 PATCH /api/v1/products/{product}
 POST /api/v1/service-orders
+PATCH /api/v1/service-orders/{serviceOrder}/finish
 POST /api/v1/service-orders/{serviceOrder}/parts
 POST /api/v1/vehicles
 ```
@@ -698,6 +699,16 @@ Payload:
 
 A peca fica vinculada a ordem de servico, mas o estoque ainda nao e baixado. Nesta versao, o saldo disponivel e validado antes da vinculacao para evitar reservar quantidade maior que o estoque atual.
 
+### Finalizar Ordem De Servico
+
+```http
+PATCH /api/v1/service-orders/018f95f2-0f08-7f85-9b31-2d833a1a2f43/finish
+X-Tenant-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f42
+X-User-Id: 018f95f2-0f08-7f85-9b31-2d833a1a2f44
+```
+
+A finalizacao registra uma saida de estoque para cada peca vinculada a ordem usando `type` igual a `service_consumption`, atualiza o saldo dos itens e marca a ordem como `finished`. O processo e executado em transacao para evitar baixa parcial.
+
 ## Estado Atual
 
 O setup inicial do Laravel esta criado e validado com Docker.
@@ -728,6 +739,7 @@ A Fase 0 da fundacao tecnica do backend tambem esta implementada com:
 - UC13 - Cadastrar veiculo.
 - UC14 - Criar ordem de servico.
 - UC15 - Adicionar peca a ordem de servico.
+- UC16 - Finalizar ordem de servico com baixa automatica.
 - Migration de campos de identidade em `users`.
 - Migration da tabela `user_access_tokens`.
 - Migration da tabela `products`.

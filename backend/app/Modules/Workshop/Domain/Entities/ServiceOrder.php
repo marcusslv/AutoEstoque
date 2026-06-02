@@ -20,8 +20,9 @@ final class ServiceOrder extends Entity
         private readonly string $customerName,
         private readonly string $servicesDescription,
         private readonly ?string $observations,
-        private readonly ServiceOrderStatus $status,
+        private ServiceOrderStatus $status,
         private readonly DateTimeImmutable $openedAt,
+        private ?DateTimeImmutable $finishedAt,
     ) {
         parent::__construct();
 
@@ -73,5 +74,20 @@ final class ServiceOrder extends Entity
     public function openedAt(): DateTimeImmutable
     {
         return $this->openedAt;
+    }
+
+    public function finishedAt(): ?DateTimeImmutable
+    {
+        return $this->finishedAt;
+    }
+
+    public function finish(DateTimeImmutable $finishedAt): void
+    {
+        if ($this->status->value !== ServiceOrderStatus::OPEN) {
+            return;
+        }
+
+        $this->status = new ServiceOrderStatus(ServiceOrderStatus::FINISHED);
+        $this->finishedAt = $finishedAt;
     }
 }

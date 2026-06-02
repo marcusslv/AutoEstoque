@@ -1,6 +1,6 @@
 <?php
 
-use App\Modules\Tenant\Interfaces\Http\Middleware\ResolveTenant;
+use App\Modules\Identity\Interfaces\Http\Middleware\AuthenticateApiRequest;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,7 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'tenant' => ResolveTenant::class,
+            'auth.api' => AuthenticateApiRequest::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

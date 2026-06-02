@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignUuid('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->foreignUuid('service_order_id')->constrained('service_orders')->cascadeOnDelete();
             $table->foreignUuid('product_id')->constrained('products')->cascadeOnDelete();
-            $table->uuid('added_by_user_id');
+            $table->unsignedBigInteger('added_by_user_id');
             $table->unsignedInteger('quantity');
             $table->timestamps();
 

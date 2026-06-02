@@ -3,6 +3,7 @@
 namespace App\Modules\Workshop\Interfaces\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Identity\Application\Contexts\AuthenticatedUserContext;
 use App\Modules\Shared\Domain\Exceptions\DomainValidationException;
 use App\Modules\Tenant\Application\TenantContext;
 use App\Modules\Workshop\Application\UseCases\CreateServiceOrder\CreateServiceOrderUseCase;
@@ -18,6 +19,7 @@ final class CreateServiceOrderController extends Controller
     public function __invoke(
         CreateServiceOrderRequest $request,
         TenantContext $tenantContext,
+        AuthenticatedUserContext $userContext,
         CreateServiceOrderUseCase $useCase,
         CreateServiceOrderPresenter $presenter,
     ): JsonResponse {
@@ -25,7 +27,7 @@ final class CreateServiceOrderController extends Controller
             $output = $useCase->execute(new CreateServiceOrderInput(
                 tenantId: $tenantContext->id()->value,
                 vehicleId: $request->string('vehicle_id')->toString(),
-                createdByUserId: (string) $request->header('X-User-Id'),
+                createdByUserId: $userContext->id(),
                 customerName: $request->string('customer_name')->toString(),
                 servicesDescription: $request->string('services_description')->toString(),
                 observations: $request->input('observations'),

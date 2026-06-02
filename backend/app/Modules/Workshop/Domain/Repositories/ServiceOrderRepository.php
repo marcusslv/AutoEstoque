@@ -11,4 +11,6 @@ interface ServiceOrderRepository
     public function findById(TenantId $tenantId, ServiceOrderId $serviceOrderId): ?ServiceOrder;
 
     public function save(ServiceOrder $serviceOrder): void;
+
+    public function update(ServiceOrder $serviceOrder): void;
 }

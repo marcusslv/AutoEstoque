@@ -21,6 +21,7 @@ final class ServiceOrderFactory
         ?string $observations,
         ServiceOrderStatus $status,
         DateTimeImmutable $openedAt,
+        ?DateTimeImmutable $finishedAt = null,
     ): ServiceOrder {
         return new ServiceOrder(
             id: $id,
@@ -32,6 +33,7 @@ final class ServiceOrderFactory
             observations: $this->nullableTrim($observations),
             status: $status,
             openedAt: $openedAt,
+            finishedAt: $finishedAt,
         );
     }
 

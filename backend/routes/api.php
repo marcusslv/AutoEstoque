@@ -22,6 +22,7 @@ use App\Modules\Tenant\Application\TenantContext;
 use App\Modules\Workshop\Interfaces\Http\Controllers\AddPartToServiceOrderController;
 use App\Modules\Workshop\Interfaces\Http\Controllers\CreateServiceOrderController;
 use App\Modules\Workshop\Interfaces\Http\Controllers\CreateVehicleController;
+use App\Modules\Workshop\Interfaces\Http\Controllers\FinishServiceOrderController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -34,7 +35,7 @@ Route::prefix('v1')->group(function (): void {
     Route::post('/auth/forgot-password', RequestPasswordResetController::class);
     Route::post('/auth/reset-password', ResetPasswordController::class);
 
-    Route::middleware('tenant')->group(function (): void {
+    Route::middleware('auth.api')->group(function (): void {
         Route::get('/context/tenant', function (TenantContext $tenantContext) {
             return [
                 'tenant_id' => $tenantContext->id()->value,
@@ -57,6 +58,7 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/products', CreateProductController::class);
         Route::patch('/products/{product}', UpdateProductController::class);
         Route::post('/service-orders', CreateServiceOrderController::class);
+        Route::patch('/service-orders/{serviceOrder}/finish', FinishServiceOrderController::class);
         Route::post('/service-orders/{serviceOrder}/parts', AddPartToServiceOrderController::class);
         Route::post('/vehicles', CreateVehicleController::class);
     });

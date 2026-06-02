@@ -22,7 +22,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->foreignUuid('product_id')->constrained('products')->cascadeOnDelete();
-            $table->uuid('user_id');
+            $table->unsignedBigInteger('user_id');
             $table->string('direction', 20);
             $table->string('type', 40);
             $table->unsignedInteger('quantity');

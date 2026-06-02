@@ -32,6 +32,16 @@ class ServiceOrderTest extends TestCase
         $this->assertNull($serviceOrder->observations());
     }
 
+    public function test_it_finishes_an_open_service_order(): void
+    {
+        $serviceOrder = $this->makeServiceOrder();
+
+        $serviceOrder->finish(new DateTimeImmutable('2026-06-02 11:00:00'));
+
+        $this->assertSame(ServiceOrderStatus::FINISHED, $serviceOrder->status()->value);
+        $this->assertSame('2026-06-02T11:00:00+00:00', $serviceOrder->finishedAt()?->format(DATE_ATOM));
+    }
+
     public function test_it_rejects_blank_required_fields_using_domain_validator(): void
     {
         try {

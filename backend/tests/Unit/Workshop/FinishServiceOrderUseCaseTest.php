@@ -3,26 +3,31 @@
 namespace Tests\Unit\Workshop;
 
 use App\Modules\Catalog\Domain\Entities\Product;
-use App\Modules\Catalog\Domain\Exceptions\ProductNotFoundException;
 use App\Modules\Catalog\Domain\Factories\ProductFactory;
 use App\Modules\Catalog\Domain\Repositories\ProductRepository;
 use App\Modules\Catalog\Domain\ValueObjects\Barcode;
 use App\Modules\Catalog\Domain\ValueObjects\Money;
 use App\Modules\Catalog\Domain\ValueObjects\ProductId;
 use App\Modules\Catalog\Domain\ValueObjects\Sku;
+use App\Modules\Inventory\Application\UseCases\RegisterStockOutput\RegisterStockOutputUseCase;
 use App\Modules\Inventory\Domain\Entities\InventoryItem;
+use App\Modules\Inventory\Domain\Entities\StockMovement;
 use App\Modules\Inventory\Domain\Exceptions\InsufficientStockException;
 use App\Modules\Inventory\Domain\Factories\InventoryItemFactory;
+use App\Modules\Inventory\Domain\Factories\StockMovementFactory;
 use App\Modules\Inventory\Domain\Repositories\InventoryItemRepository;
+use App\Modules\Inventory\Domain\Repositories\StockMovementRepository;
 use App\Modules\Inventory\Domain\ValueObjects\InventoryItemId;
 use App\Modules\Inventory\Domain\ValueObjects\StockProductId;
 use App\Modules\Inventory\Domain\ValueObjects\StockQuantity;
+use App\Modules\Shared\Application\Contracts\TransactionManager;
 use App\Modules\Tenant\Domain\ValueObjects\TenantId;
-use App\Modules\Workshop\Application\UseCases\AddPartToServiceOrder\AddPartToServiceOrderUseCase;
-use App\Modules\Workshop\Application\UseCases\AddPartToServiceOrder\Dtos\AddPartToServiceOrderInput;
-use App\Modules\Workshop\Application\UseCases\AddPartToServiceOrder\Dtos\AddPartToServiceOrderOutput;
+use App\Modules\Workshop\Application\UseCases\FinishServiceOrder\Dtos\FinishServiceOrderInput;
+use App\Modules\Workshop\Application\UseCases\FinishServiceOrder\Dtos\FinishServiceOrderOutput;
+use App\Modules\Workshop\Application\UseCases\FinishServiceOrder\FinishServiceOrderUseCase;
 use App\Modules\Workshop\Domain\Entities\ServiceOrder;
 use App\Modules\Workshop\Domain\Entities\ServiceOrderItem;
+use App\Modules\Workshop\Domain\Exceptions\ServiceOrderHasNoItemsException;
 use App\Modules\Workshop\Domain\Exceptions\ServiceOrderNotFoundException;
 use App\Modules\Workshop\Domain\Exceptions\ServiceOrderNotOpenException;
 use App\Modules\Workshop\Domain\Factories\ServiceOrderFactory;
@@ -30,38 +35,41 @@ use App\Modules\Workshop\Domain\Factories\ServiceOrderItemFactory;
 use App\Modules\Workshop\Domain\Repositories\ServiceOrderItemRepository;
 use App\Modules\Workshop\Domain\Repositories\ServiceOrderRepository;
 use App\Modules\Workshop\Domain\ValueObjects\ServiceOrderId;
+use App\Modules\Workshop\Domain\ValueObjects\ServiceOrderItemId;
 use App\Modules\Workshop\Domain\ValueObjects\ServiceOrderStatus;
 use App\Modules\Workshop\Domain\ValueObjects\VehicleId;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
-class AddPartToServiceOrderUseCaseTest extends TestCase
+class FinishServiceOrderUseCaseTest extends TestCase
 {
-    public function test_it_adds_a_part_to_an_open_service_order(): void
+    public function test_it_finishes_service_order_and_registers_stock_outputs(): void
     {
-        $serviceOrders = new AddPartServiceOrderRepository;
+        $serviceOrders = new FinishServiceOrderRepository;
         $serviceOrders->save($this->serviceOrder());
 
-        $serviceOrderItems = new AddPartServiceOrderItemRepository;
-        $inventoryItems = new AddPartInventoryItemRepository;
+        $serviceOrderItems = new FinishServiceOrderItemRepository;
+        $serviceOrderItems->save($this->serviceOrderItem(quantity: 2));
+
+        $inventoryItems = new FinishInventoryItemRepository;
         $inventoryItems->save($this->inventoryItem(currentStock: 5));
 
-        $useCase = new AddPartToServiceOrderUseCase(
-            $serviceOrders,
-            $serviceOrderItems,
-            new AddPartProductRepository([$this->product()]),
-            $inventoryItems,
-            new ServiceOrderItemFactory,
-        );
+        $stockMovements = new FinishStockMovementRepository;
 
-        $output = $useCase->execute($this->input(quantity: 2));
+        $output = $this->useCase(
+            serviceOrders: $serviceOrders,
+            serviceOrderItems: $serviceOrderItems,
+            inventoryItems: $inventoryItems,
+            stockMovements: $stockMovements,
+        )->execute($this->input());
 
-        $this->assertInstanceOf(AddPartToServiceOrderOutput::class, $output);
-        $this->assertSame('018f95f2-0f08-7f85-9b31-2d833a1a2f43', $output->serviceOrderId);
-        $this->assertSame('018f95f2-0f08-7f85-9b31-2d833a1a2f44', $output->productId);
-        $this->assertSame(2, $output->quantity);
-        $this->assertCount(1, $serviceOrderItems->items);
-        $this->assertSame(5, $inventoryItems->items[0]->currentStock()->value);
+        $this->assertInstanceOf(FinishServiceOrderOutput::class, $output);
+        $this->assertSame('finished', $output->status);
+        $this->assertCount(1, $output->movementIds);
+        $this->assertSame('finished', $serviceOrders->serviceOrders[0]->status()->value);
+        $this->assertSame(3, $inventoryItems->items[0]->currentStock()->value);
+        $this->assertCount(1, $stockMovements->movements);
+        $this->assertSame('service_consumption', $stockMovements->movements[0]->type()->value);
     }
 
     public function test_it_rejects_missing_service_order(): void
@@ -73,7 +81,7 @@ class AddPartToServiceOrderUseCaseTest extends TestCase
 
     public function test_it_rejects_finished_service_order(): void
     {
-        $serviceOrders = new AddPartServiceOrderRepository;
+        $serviceOrders = new FinishServiceOrderRepository;
         $serviceOrders->save($this->serviceOrder(status: ServiceOrderStatus::FINISHED));
 
         $this->expectException(ServiceOrderNotOpenException::class);
@@ -81,60 +89,71 @@ class AddPartToServiceOrderUseCaseTest extends TestCase
         $this->useCase(serviceOrders: $serviceOrders)->execute($this->input());
     }
 
-    public function test_it_rejects_missing_product(): void
+    public function test_it_rejects_service_order_without_items(): void
     {
-        $serviceOrders = new AddPartServiceOrderRepository;
+        $serviceOrders = new FinishServiceOrderRepository;
         $serviceOrders->save($this->serviceOrder());
 
-        $this->expectException(ProductNotFoundException::class);
+        $this->expectException(ServiceOrderHasNoItemsException::class);
 
-        $this->useCase(
-            serviceOrders: $serviceOrders,
-            products: new AddPartProductRepository,
-        )->execute($this->input());
+        $this->useCase(serviceOrders: $serviceOrders)->execute($this->input());
     }
 
-    public function test_it_rejects_insufficient_stock(): void
+    public function test_it_rejects_insufficient_stock_and_keeps_service_order_open(): void
     {
-        $serviceOrders = new AddPartServiceOrderRepository;
+        $serviceOrders = new FinishServiceOrderRepository;
         $serviceOrders->save($this->serviceOrder());
 
-        $inventoryItems = new AddPartInventoryItemRepository;
+        $serviceOrderItems = new FinishServiceOrderItemRepository;
+        $serviceOrderItems->save($this->serviceOrderItem(quantity: 2));
+
+        $inventoryItems = new FinishInventoryItemRepository;
         $inventoryItems->save($this->inventoryItem(currentStock: 1));
 
         $this->expectException(InsufficientStockException::class);
 
-        $this->useCase(
-            serviceOrders: $serviceOrders,
-            inventoryItems: $inventoryItems,
-        )->execute($this->input(quantity: 2));
+        try {
+            $this->useCase(
+                serviceOrders: $serviceOrders,
+                serviceOrderItems: $serviceOrderItems,
+                inventoryItems: $inventoryItems,
+            )->execute($this->input());
+        } finally {
+            $this->assertSame('open', $serviceOrders->serviceOrders[0]->status()->value);
+        }
     }
 
     private function useCase(
-        ?AddPartServiceOrderRepository $serviceOrders = null,
-        ?AddPartProductRepository $products = null,
-        ?AddPartInventoryItemRepository $inventoryItems = null,
-    ): AddPartToServiceOrderUseCase {
-        $inventoryItems ??= new AddPartInventoryItemRepository;
-        $inventoryItems->save($this->inventoryItem(currentStock: 5));
+        ?FinishServiceOrderRepository $serviceOrders = null,
+        ?FinishServiceOrderItemRepository $serviceOrderItems = null,
+        ?FinishInventoryItemRepository $inventoryItems = null,
+        ?FinishStockMovementRepository $stockMovements = null,
+    ): FinishServiceOrderUseCase {
+        $inventoryItems ??= new FinishInventoryItemRepository;
+        $stockMovements ??= new FinishStockMovementRepository;
 
-        return new AddPartToServiceOrderUseCase(
-            $serviceOrders ?? new AddPartServiceOrderRepository,
-            new AddPartServiceOrderItemRepository,
-            $products ?? new AddPartProductRepository([$this->product()]),
+        $registerStockOutput = new RegisterStockOutputUseCase(
+            new FinishProductRepository([$this->product()]),
             $inventoryItems,
-            new ServiceOrderItemFactory,
+            $stockMovements,
+            new StockMovementFactory,
+            new FinishFakeTransactionManager,
+        );
+
+        return new FinishServiceOrderUseCase(
+            $serviceOrders ?? new FinishServiceOrderRepository,
+            $serviceOrderItems ?? new FinishServiceOrderItemRepository,
+            $registerStockOutput,
+            new FinishFakeTransactionManager,
         );
     }
 
-    private function input(int $quantity = 1): AddPartToServiceOrderInput
+    private function input(): FinishServiceOrderInput
     {
-        return new AddPartToServiceOrderInput(
+        return new FinishServiceOrderInput(
             tenantId: '018f95f2-0f08-7f85-9b31-2d833a1a2f42',
             serviceOrderId: '018f95f2-0f08-7f85-9b31-2d833a1a2f43',
-            productId: '018f95f2-0f08-7f85-9b31-2d833a1a2f44',
-            addedByUserId: '018f95f2-0f08-7f85-9b31-2d833a1a2f45',
-            quantity: $quantity,
+            finishedByUserId: '018f95f2-0f08-7f85-9b31-2d833a1a2f45',
         );
     }
 
@@ -150,6 +169,18 @@ class AddPartToServiceOrderUseCaseTest extends TestCase
             observations: null,
             status: new ServiceOrderStatus($status),
             openedAt: new DateTimeImmutable('2026-06-02 10:00:00'),
+        );
+    }
+
+    private function serviceOrderItem(int $quantity): ServiceOrderItem
+    {
+        return (new ServiceOrderItemFactory)->create(
+            id: new ServiceOrderItemId('018f95f2-0f08-7f85-9b31-2d833a1a2f48'),
+            tenantId: new TenantId('018f95f2-0f08-7f85-9b31-2d833a1a2f42'),
+            serviceOrderId: new ServiceOrderId('018f95f2-0f08-7f85-9b31-2d833a1a2f43'),
+            productId: new ProductId('018f95f2-0f08-7f85-9b31-2d833a1a2f44'),
+            addedByUserId: '018f95f2-0f08-7f85-9b31-2d833a1a2f45',
+            quantity: $quantity,
         );
     }
 
@@ -180,7 +211,7 @@ class AddPartToServiceOrderUseCaseTest extends TestCase
     }
 }
 
-final class AddPartServiceOrderRepository implements ServiceOrderRepository
+final class FinishServiceOrderRepository implements ServiceOrderRepository
 {
     /**
      * @var array<int, ServiceOrder>
@@ -211,14 +242,12 @@ final class AddPartServiceOrderRepository implements ServiceOrderRepository
                 && $currentServiceOrder->id()->value === $serviceOrder->id()->value
             ) {
                 $this->serviceOrders[$index] = $serviceOrder;
-
-                return;
             }
         }
     }
 }
 
-final class AddPartServiceOrderItemRepository implements ServiceOrderItemRepository
+final class FinishServiceOrderItemRepository implements ServiceOrderItemRepository
 {
     /**
      * @var array<int, ServiceOrderItem>
@@ -240,12 +269,58 @@ final class AddPartServiceOrderItemRepository implements ServiceOrderItemReposit
     }
 }
 
-final class AddPartProductRepository implements ProductRepository
+final class FinishInventoryItemRepository implements InventoryItemRepository
+{
+    /**
+     * @var array<int, InventoryItem>
+     */
+    public array $items = [];
+
+    public function findByProductId(TenantId $tenantId, StockProductId $productId): ?InventoryItem
+    {
+        foreach ($this->items as $item) {
+            if ($item->tenantId()->equals($tenantId) && $item->productId()->value === $productId->value) {
+                return $item;
+            }
+        }
+
+        return null;
+    }
+
+    public function save(InventoryItem $item): void
+    {
+        $this->items[] = $item;
+    }
+
+    public function update(InventoryItem $item): void
+    {
+        foreach ($this->items as $index => $currentItem) {
+            if ($currentItem->tenantId()->equals($item->tenantId()) && $currentItem->productId()->value === $item->productId()->value) {
+                $this->items[$index] = $item;
+            }
+        }
+    }
+}
+
+final class FinishStockMovementRepository implements StockMovementRepository
+{
+    /**
+     * @var array<int, StockMovement>
+     */
+    public array $movements = [];
+
+    public function save(StockMovement $movement): void
+    {
+        $this->movements[] = $movement;
+    }
+}
+
+final class FinishProductRepository implements ProductRepository
 {
     /**
      * @param  array<int, Product>  $products
      */
-    public function __construct(public array $products = []) {}
+    public function __construct(private array $products = []) {}
 
     public function search(TenantId $tenantId, ?string $term = null): array
     {
@@ -294,31 +369,10 @@ final class AddPartProductRepository implements ProductRepository
     }
 }
 
-final class AddPartInventoryItemRepository implements InventoryItemRepository
+final class FinishFakeTransactionManager implements TransactionManager
 {
-    /**
-     * @var array<int, InventoryItem>
-     */
-    public array $items = [];
-
-    public function findByProductId(TenantId $tenantId, StockProductId $productId): ?InventoryItem
+    public function run(callable $callback): mixed
     {
-        foreach ($this->items as $item) {
-            if ($item->tenantId()->equals($tenantId) && $item->productId()->value === $productId->value) {
-                return $item;
-            }
-        }
-
-        return null;
-    }
-
-    public function save(InventoryItem $item): void
-    {
-        $this->items[] = $item;
-    }
-
-    public function update(InventoryItem $item): void
-    {
-        //
+        return $callback();
     }
 }

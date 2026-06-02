@@ -4,6 +4,7 @@ namespace App\Modules\Workshop\Interfaces\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Catalog\Domain\Exceptions\ProductNotFoundException;
+use App\Modules\Identity\Application\Contexts\AuthenticatedUserContext;
 use App\Modules\Inventory\Domain\Exceptions\InsufficientStockException;
 use App\Modules\Shared\Domain\Exceptions\DomainValidationException;
 use App\Modules\Tenant\Application\TenantContext;
@@ -22,6 +23,7 @@ final class AddPartToServiceOrderController extends Controller
         string $serviceOrder,
         AddPartToServiceOrderRequest $request,
         TenantContext $tenantContext,
+        AuthenticatedUserContext $userContext,
         AddPartToServiceOrderUseCase $useCase,
         AddPartToServiceOrderPresenter $presenter,
     ): JsonResponse {
@@ -30,7 +32,7 @@ final class AddPartToServiceOrderController extends Controller
                 tenantId: $tenantContext->id()->value,
                 serviceOrderId: $serviceOrder,
                 productId: $request->string('product_id')->toString(),
-                addedByUserId: (string) $request->header('X-User-Id'),
+                addedByUserId: $userContext->id(),
                 quantity: $request->integer('quantity'),
             ));
 

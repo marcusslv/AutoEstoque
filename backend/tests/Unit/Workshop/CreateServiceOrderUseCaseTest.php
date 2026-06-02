@@ -143,4 +143,18 @@ final class InMemoryServiceOrderRepository implements ServiceOrderRepository
     {
         $this->serviceOrders[] = $serviceOrder;
     }
+
+    public function update(ServiceOrder $serviceOrder): void
+    {
+        foreach ($this->serviceOrders as $index => $currentServiceOrder) {
+            if (
+                $currentServiceOrder->tenantId()->equals($serviceOrder->tenantId())
+                && $currentServiceOrder->id()->value === $serviceOrder->id()->value
+            ) {
+                $this->serviceOrders[$index] = $serviceOrder;
+
+                return;
+            }
+        }
+    }
 }

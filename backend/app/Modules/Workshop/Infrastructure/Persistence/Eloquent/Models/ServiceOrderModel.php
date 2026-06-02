@@ -21,5 +21,6 @@ final class ServiceOrderModel extends Model
         'observations',
         'status',
         'opened_at',
+        'finished_at',
     ];
 }

@@ -42,7 +42,19 @@ final class EloquentServiceOrderRepository implements ServiceOrderRepository
             'observations' => $serviceOrder->observations(),
             'status' => $serviceOrder->status()->value,
             'opened_at' => $serviceOrder->openedAt()->format('Y-m-d H:i:s'),
+            'finished_at' => $serviceOrder->finishedAt()?->format('Y-m-d H:i:s'),
         ]);
+    }
+
+    public function update(ServiceOrder $serviceOrder): void
+    {
+        ServiceOrderModel::query()
+            ->where('tenant_id', $serviceOrder->tenantId()->value)
+            ->where('id', $serviceOrder->id()->value)
+            ->update([
+                'status' => $serviceOrder->status()->value,
+                'finished_at' => $serviceOrder->finishedAt()?->format('Y-m-d H:i:s'),
+            ]);
     }
 
     private function toDomain(ServiceOrderModel $model): ServiceOrder
@@ -57,6 +69,7 @@ final class EloquentServiceOrderRepository implements ServiceOrderRepository
             observations: $model->observations === null ? null : (string) $model->observations,
             status: new ServiceOrderStatus((string) $model->status),
             openedAt: new DateTimeImmutable((string) $model->opened_at),
+            finishedAt: $model->finished_at === null ? null : new DateTimeImmutable((string) $model->finished_at),
         );
     }
 }

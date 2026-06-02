@@ -4,6 +4,7 @@ namespace App\Modules\Inventory\Interfaces\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Catalog\Domain\Exceptions\ProductNotFoundException;
+use App\Modules\Identity\Application\Contexts\AuthenticatedUserContext;
 use App\Modules\Inventory\Application\UseCases\RegisterStockEntry\Dtos\RegisterStockEntryInput;
 use App\Modules\Inventory\Application\UseCases\RegisterStockEntry\RegisterStockEntryUseCase;
 use App\Modules\Inventory\Interfaces\Http\Presenters\RegisterStockEntryPresenter;
@@ -18,13 +19,14 @@ final class RegisterStockEntryController extends Controller
     public function __invoke(
         RegisterStockEntryRequest $request,
         TenantContext $tenantContext,
+        AuthenticatedUserContext $userContext,
         RegisterStockEntryUseCase $useCase,
         RegisterStockEntryPresenter $presenter,
     ): JsonResponse {
         try {
             $output = $useCase->execute(new RegisterStockEntryInput(
                 tenantId: $tenantContext->id()->value,
-                userId: (string) $request->header('X-User-Id'),
+                userId: $userContext->id(),
                 productId: $request->string('product_id')->toString(),
                 type: $request->string('type')->toString(),
                 quantity: $request->integer('quantity'),

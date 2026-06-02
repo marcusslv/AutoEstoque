@@ -4,6 +4,7 @@ namespace App\Modules\Inventory\Interfaces\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Catalog\Domain\Exceptions\ProductNotFoundException;
+use App\Modules\Identity\Application\Contexts\AuthenticatedUserContext;
 use App\Modules\Inventory\Application\UseCases\RegisterStockAdjustment\Dtos\RegisterStockAdjustmentInput;
 use App\Modules\Inventory\Application\UseCases\RegisterStockAdjustment\RegisterStockAdjustmentUseCase;
 use App\Modules\Inventory\Domain\Exceptions\InsufficientStockException;
@@ -19,13 +20,14 @@ final class RegisterStockAdjustmentController extends Controller
     public function __invoke(
         RegisterStockAdjustmentRequest $request,
         TenantContext $tenantContext,
+        AuthenticatedUserContext $userContext,
         RegisterStockAdjustmentUseCase $useCase,
         RegisterStockAdjustmentPresenter $presenter,
     ): JsonResponse {
         try {
             $output = $useCase->execute(new RegisterStockAdjustmentInput(
                 tenantId: $tenantContext->id()->value,
-                userId: (string) $request->header('X-User-Id'),
+                userId: $userContext->id(),
                 productId: $request->string('product_id')->toString(),
                 direction: $request->string('direction')->toString(),
                 quantity: $request->integer('quantity'),

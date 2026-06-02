@@ -1,46 +1,46 @@
 <?php
 
-namespace App\Modules\Inventory\Interfaces\Http\Controllers;
+namespace App\Modules\Workshop\Interfaces\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Catalog\Domain\Exceptions\ProductNotFoundException;
 use App\Modules\Identity\Application\Contexts\AuthenticatedUserContext;
-use App\Modules\Inventory\Application\UseCases\RegisterStockOutput\Dtos\RegisterStockOutputInput;
-use App\Modules\Inventory\Application\UseCases\RegisterStockOutput\RegisterStockOutputUseCase;
 use App\Modules\Inventory\Domain\Exceptions\InsufficientStockException;
-use App\Modules\Inventory\Interfaces\Http\Presenters\RegisterStockOutputPresenter;
-use App\Modules\Inventory\Interfaces\Http\Requests\RegisterStockOutputRequest;
 use App\Modules\Shared\Domain\Exceptions\DomainValidationException;
 use App\Modules\Tenant\Application\TenantContext;
+use App\Modules\Workshop\Application\UseCases\FinishServiceOrder\Dtos\FinishServiceOrderInput;
+use App\Modules\Workshop\Application\UseCases\FinishServiceOrder\FinishServiceOrderUseCase;
+use App\Modules\Workshop\Domain\Exceptions\ServiceOrderHasNoItemsException;
+use App\Modules\Workshop\Domain\Exceptions\ServiceOrderNotFoundException;
+use App\Modules\Workshop\Domain\Exceptions\ServiceOrderNotOpenException;
+use App\Modules\Workshop\Interfaces\Http\Presenters\FinishServiceOrderPresenter;
+use App\Modules\Workshop\Interfaces\Http\Requests\FinishServiceOrderRequest;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
-final class RegisterStockOutputController extends Controller
+final class FinishServiceOrderController extends Controller
 {
     public function __invoke(
-        RegisterStockOutputRequest $request,
+        string $serviceOrder,
+        FinishServiceOrderRequest $request,
         TenantContext $tenantContext,
         AuthenticatedUserContext $userContext,
-        RegisterStockOutputUseCase $useCase,
-        RegisterStockOutputPresenter $presenter,
+        FinishServiceOrderUseCase $useCase,
+        FinishServiceOrderPresenter $presenter,
     ): JsonResponse {
         try {
-            $output = $useCase->execute(new RegisterStockOutputInput(
+            $output = $useCase->execute(new FinishServiceOrderInput(
                 tenantId: $tenantContext->id()->value,
-                userId: $userContext->id(),
-                productId: $request->string('product_id')->toString(),
-                type: $request->string('type')->toString(),
-                quantity: $request->integer('quantity'),
-                reason: $request->string('reason')->toString(),
-                note: $request->input('note'),
+                serviceOrderId: $serviceOrder,
+                finishedByUserId: $userContext->id(),
             ));
 
             return $presenter->present($output);
-        } catch (ProductNotFoundException $exception) {
+        } catch (ServiceOrderNotFoundException|ProductNotFoundException $exception) {
             return response()->json([
                 'message' => $exception->getMessage(),
             ], Response::HTTP_NOT_FOUND);
-        } catch (InsufficientStockException $exception) {
+        } catch (ServiceOrderNotOpenException|ServiceOrderHasNoItemsException|InsufficientStockException $exception) {
             return response()->json([
                 'message' => $exception->getMessage(),
             ], Response::HTTP_CONFLICT);
