@@ -32,9 +32,13 @@ use App\Modules\Inventory\Infrastructure\Persistence\Eloquent\Repositories\Eloqu
 use App\Modules\Shared\Application\Contracts\TransactionManager;
 use App\Modules\Shared\Infrastructure\Persistence\LaravelTransactionManager;
 use App\Modules\Tenant\Application\TenantContext;
+use App\Modules\Workshop\Application\UseCases\ListVehicles\Contracts\VehicleListQuery;
+use App\Modules\Workshop\Application\UseCases\ShowServiceOrder\Contracts\ServiceOrderDetailsQuery;
 use App\Modules\Workshop\Domain\Repositories\ServiceOrderItemRepository;
 use App\Modules\Workshop\Domain\Repositories\ServiceOrderRepository;
 use App\Modules\Workshop\Domain\Repositories\VehicleRepository;
+use App\Modules\Workshop\Infrastructure\Persistence\Eloquent\Queries\EloquentServiceOrderDetailsQuery;
+use App\Modules\Workshop\Infrastructure\Persistence\Eloquent\Queries\EloquentVehicleListQuery;
 use App\Modules\Workshop\Infrastructure\Persistence\Eloquent\Repositories\EloquentServiceOrderItemRepository;
 use App\Modules\Workshop\Infrastructure\Persistence\Eloquent\Repositories\EloquentServiceOrderRepository;
 use App\Modules\Workshop\Infrastructure\Persistence\Eloquent\Repositories\EloquentVehicleRepository;
@@ -57,6 +61,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PasswordResetLinkSender::class, LaravelPasswordResetLinkSender::class);
         $this->app->bind(PasswordResetter::class, LaravelPasswordResetter::class);
         $this->app->bind(ProductRepository::class, EloquentProductRepository::class);
+        $this->app->bind(VehicleListQuery::class, EloquentVehicleListQuery::class);
+        $this->app->bind(ServiceOrderDetailsQuery::class, EloquentServiceOrderDetailsQuery::class);
         $this->app->bind(VehicleRepository::class, EloquentVehicleRepository::class);
         $this->app->bind(ServiceOrderRepository::class, EloquentServiceOrderRepository::class);
         $this->app->bind(ServiceOrderItemRepository::class, EloquentServiceOrderItemRepository::class);

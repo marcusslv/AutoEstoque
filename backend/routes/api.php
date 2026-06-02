@@ -23,6 +23,8 @@ use App\Modules\Workshop\Interfaces\Http\Controllers\AddPartToServiceOrderContro
 use App\Modules\Workshop\Interfaces\Http\Controllers\CreateServiceOrderController;
 use App\Modules\Workshop\Interfaces\Http\Controllers\CreateVehicleController;
 use App\Modules\Workshop\Interfaces\Http\Controllers\FinishServiceOrderController;
+use App\Modules\Workshop\Interfaces\Http\Controllers\ListVehiclesController;
+use App\Modules\Workshop\Interfaces\Http\Controllers\ShowServiceOrderController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -58,8 +60,10 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/products', CreateProductController::class);
         Route::patch('/products/{product}', UpdateProductController::class);
         Route::post('/service-orders', CreateServiceOrderController::class);
+        Route::get('/service-orders/{serviceOrder}', ShowServiceOrderController::class);
         Route::patch('/service-orders/{serviceOrder}/finish', FinishServiceOrderController::class);
         Route::post('/service-orders/{serviceOrder}/parts', AddPartToServiceOrderController::class);
+        Route::get('/vehicles', ListVehiclesController::class);
         Route::post('/vehicles', CreateVehicleController::class);
     });
 });

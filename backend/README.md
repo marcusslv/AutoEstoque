@@ -251,8 +251,10 @@ POST /api/v1/inventory/outputs
 POST /api/v1/products
 PATCH /api/v1/products/{product}
 POST /api/v1/service-orders
+GET /api/v1/service-orders/{serviceOrder}
 PATCH /api/v1/service-orders/{serviceOrder}/finish
 POST /api/v1/service-orders/{serviceOrder}/parts
+GET /api/v1/vehicles
 POST /api/v1/vehicles
 ```
 
@@ -653,6 +655,18 @@ Payload:
 
 A placa e normalizada para letras maiusculas e sem separadores. Placas duplicadas dentro do mesmo tenant retornam `409 Conflict`; a mesma placa pode existir em tenants diferentes.
 
+### Listar Veiculos
+
+```http
+GET /api/v1/vehicles?search=onix&limit=50
+Authorization: Bearer {access_token}
+```
+
+Filtros aceitos:
+
+- `search`: busca por placa, marca, modelo, proprietario ou telefone.
+- `limit`: entre `1` e `100`.
+
 ### Criar Ordem De Servico
 
 ```http
@@ -673,6 +687,15 @@ Payload:
 ```
 
 A ordem e criada com status inicial `open`. O veiculo deve pertencer ao tenant atual; caso contrario, a API retorna `404 Not Found`.
+
+### Detalhar Ordem De Servico
+
+```http
+GET /api/v1/service-orders/018f95f2-0f08-7f85-9b31-2d833a1a2f43
+Authorization: Bearer {access_token}
+```
+
+A resposta inclui dados da ordem, veiculo vinculado e pecas adicionadas com nome, SKU e quantidade.
 
 ### Adicionar Peca A Ordem De Servico
 
