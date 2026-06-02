@@ -1,0 +1,1382 @@
+openapi: 3.1.0
+info:
+  title: AutoEstoque API
+  version: 1.0.0
+  summary: API do backend AutoEstoque.
+  description: >
+    API SaaS para controle de estoque e operacao de oficinas mecanicas.
+    Rotas protegidas usam token Bearer. O tenant e o usuario autenticado sao
+    resolvidos a partir do token.
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Ambiente Docker local
+tags:
+  - name: Health
+  - name: Auth
+  - name: Context
+  - name: Users
+  - name: Dashboard
+  - name: Catalog
+  - name: Inventory
+  - name: Workshop
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Verificar saude da API
+      security: []
+      responses:
+        "200":
+          description: API disponivel.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  service:
+                    type: string
+                    example: autoestoque-api
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Autenticar usuario
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Usuario autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Encerrar sessao e revogar token atual
+      responses:
+        "200":
+          description: Token revogado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogoutResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Solicitar recuperacao de senha
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+      responses:
+        "200":
+          description: Solicitacao processada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Redefinir senha
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+      responses:
+        "200":
+          description: Senha redefinida.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /context/tenant:
+    get:
+      tags: [Context]
+      summary: Consultar tenant resolvido pelo token
+      responses:
+        "200":
+          description: Tenant atual.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tenant_id:
+                    $ref: "#/components/schemas/Uuid"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /users:
+    get:
+      tags: [Users]
+      summary: Listar usuarios da oficina
+      description: Requer perfil `owner`, `manager` ou `admin`.
+      responses:
+        "200":
+          description: Lista de usuarios.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserListResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      tags: [Users]
+      summary: Criar usuario da oficina
+      description: Requer perfil `owner`, `manager` ou `admin`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "201":
+          description: Usuario criado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /users/{user}:
+    patch:
+      tags: [Users]
+      summary: Atualizar usuario da oficina
+      description: Requer perfil `owner`, `manager` ou `admin`.
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: Usuario atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /users/{user}/deactivate:
+    patch:
+      tags: [Users]
+      summary: Inativar usuario da oficina
+      description: Requer perfil `owner`, `manager` ou `admin`.
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: Usuario inativado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Visualizar dashboard
+      description: Requer perfil `owner`, `manager` ou `admin`.
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: recent_movements_limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+      responses:
+        "200":
+          description: Indicadores consolidados.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /dashboard/most-consumed-products:
+    get:
+      tags: [Dashboard]
+      summary: Consultar produtos mais consumidos
+      description: Requer perfil `owner`, `manager` ou `admin`.
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: period_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: period_to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Ranking de consumo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MostConsumedProductsResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /stock:
+    get:
+      tags: [Catalog]
+      summary: Consultar estoque
+      description: Requer perfil `owner`, `manager`, `admin` ou `mechanic`.
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Produtos com saldo atual.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StockListResponse"
+  /products:
+    post:
+      tags: [Catalog]
+      summary: Cadastrar produto ou peca
+      description: Requer perfil `owner`, `manager` ou `admin`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductRequest"
+      responses:
+        "201":
+          description: Produto criado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /products/{product}:
+    patch:
+      tags: [Catalog]
+      summary: Atualizar produto ou peca
+      description: Requer perfil `owner`, `manager` ou `admin`.
+      parameters:
+        - $ref: "#/components/parameters/ProductId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductRequest"
+      responses:
+        "200":
+          description: Produto atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /inventory/alerts/minimum-stock:
+    get:
+      tags: [Inventory]
+      summary: Gerar alertas de estoque minimo
+      description: Requer perfil `owner`, `manager` ou `admin`.
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: Alertas de estoque minimo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MinimumStockAlertsResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /inventory/alerts/zero-stock:
+    get:
+      tags: [Inventory]
+      summary: Gerar alertas de estoque zerado
+      description: Requer perfil `owner`, `manager` ou `admin`.
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: Alertas de estoque zerado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ZeroStockAlertsResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /inventory/movements:
+    get:
+      tags: [Inventory]
+      summary: Consultar historico de movimentacoes
+      description: Requer perfil `owner`, `manager` ou `admin`.
+      parameters:
+        - name: product_id
+          in: query
+          schema:
+            $ref: "#/components/schemas/Uuid"
+        - name: direction
+          in: query
+          schema:
+            type: string
+            enum: [entry, output]
+        - name: type
+          in: query
+          schema:
+            type: string
+            maxLength: 40
+        - name: user_id
+          in: query
+          schema:
+            $ref: "#/components/schemas/Uuid"
+        - name: occurred_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: occurred_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: Historico de movimentacoes.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StockMovementHistoryResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /inventory/entries:
+    post:
+      tags: [Inventory]
+      summary: Registrar entrada de estoque
+      description: Requer perfil `owner`, `manager` ou `admin`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterStockEntryRequest"
+      responses:
+        "201":
+          description: Entrada registrada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterStockMovementResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /inventory/outputs:
+    post:
+      tags: [Inventory]
+      summary: Registrar saida de estoque
+      description: Requer perfil `owner`, `manager` ou `admin`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterStockOutputRequest"
+      responses:
+        "201":
+          description: Saida registrada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterStockMovementResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /inventory/adjustments:
+    post:
+      tags: [Inventory]
+      summary: Registrar ajuste manual de estoque
+      description: Requer perfil `owner`, `manager` ou `admin`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterStockAdjustmentRequest"
+      responses:
+        "201":
+          description: Ajuste registrado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterStockMovementResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /vehicles:
+    get:
+      tags: [Workshop]
+      summary: Listar veiculos
+      description: Requer perfil `owner`, `manager`, `admin` ou `mechanic`.
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: Lista de veiculos.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VehicleListResponse"
+    post:
+      tags: [Workshop]
+      summary: Cadastrar veiculo
+      description: Requer perfil `owner`, `manager`, `admin` ou `mechanic`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VehicleRequest"
+      responses:
+        "201":
+          description: Veiculo criado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VehicleResponse"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /service-orders:
+    get:
+      tags: [Workshop]
+      summary: Listar ordens de servico
+      description: Requer perfil `owner`, `manager`, `admin` ou `mechanic`.
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, finished]
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: opened_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: opened_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: Lista de ordens de servico.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceOrderListResponse"
+    post:
+      tags: [Workshop]
+      summary: Criar ordem de servico
+      description: Requer perfil `owner`, `manager`, `admin` ou `mechanic`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateServiceOrderRequest"
+      responses:
+        "201":
+          description: Ordem criada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateServiceOrderResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /service-orders/{serviceOrder}:
+    get:
+      tags: [Workshop]
+      summary: Detalhar ordem de servico
+      description: Requer perfil `owner`, `manager`, `admin` ou `mechanic`.
+      parameters:
+        - $ref: "#/components/parameters/ServiceOrderId"
+      responses:
+        "200":
+          description: Detalhes da ordem.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceOrderDetailsResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /service-orders/{serviceOrder}/parts:
+    post:
+      tags: [Workshop]
+      summary: Adicionar peca a ordem de servico
+      description: Requer perfil `owner`, `manager`, `admin` ou `mechanic`.
+      parameters:
+        - $ref: "#/components/parameters/ServiceOrderId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddPartToServiceOrderRequest"
+      responses:
+        "201":
+          description: Peca adicionada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddPartToServiceOrderResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /service-orders/{serviceOrder}/finish:
+    patch:
+      tags: [Workshop]
+      summary: Finalizar ordem de servico com baixa automatica
+      description: Requer perfil `owner`, `manager`, `admin` ou `mechanic`.
+      parameters:
+        - $ref: "#/components/parameters/ServiceOrderId"
+      responses:
+        "200":
+          description: OS finalizada e baixas geradas.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinishServiceOrderResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  parameters:
+    ProductId:
+      name: product
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/Uuid"
+    ServiceOrderId:
+      name: serviceOrder
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/Uuid"
+    UserId:
+      name: user
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/Uuid"
+  responses:
+    Unauthorized:
+      description: Token ausente, invalido ou expirado.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: Perfil autenticado nao tem permissao.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Recurso nao encontrado.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Conflict:
+      description: Operacao conflita com o estado atual do dominio.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    ValidationError:
+      description: Payload ou filtros invalidos.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+  schemas:
+    Uuid:
+      type: string
+      format: uuid
+    ErrorResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+    ValidationErrorResponse:
+      type: object
+      required: [message, errors]
+      properties:
+        message:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+    MessageResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        token_name:
+          type: [string, "null"]
+    LoginResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            access_token:
+              type: string
+            token_type:
+              type: string
+              example: Bearer
+            expires_at:
+              type: [string, "null"]
+              format: date-time
+            user:
+              $ref: "#/components/schemas/AuthenticatedUser"
+    LogoutResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            revoked:
+              type: boolean
+    ForgotPasswordRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+    ResetPasswordRequest:
+      type: object
+      required: [email, token, password, password_confirmation]
+      properties:
+        email:
+          type: string
+          format: email
+        token:
+          type: string
+        password:
+          type: string
+          format: password
+        password_confirmation:
+          type: string
+          format: password
+    Role:
+      type: string
+      enum: [owner, manager, admin, mechanic]
+    AuthenticatedUser:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        tenant_id:
+          $ref: "#/components/schemas/Uuid"
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          $ref: "#/components/schemas/Role"
+    User:
+      allOf:
+        - $ref: "#/components/schemas/AuthenticatedUser"
+        - type: object
+          properties:
+            status:
+              type: string
+              enum: [active, inactive]
+    UserResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/User"
+    UserListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        meta:
+          $ref: "#/components/schemas/TotalMeta"
+    CreateUserRequest:
+      type: object
+      required: [name, email, password, role]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        role:
+          $ref: "#/components/schemas/Role"
+        status:
+          type: [string, "null"]
+          enum: [active, inactive, null]
+    UpdateUserRequest:
+      type: object
+      required: [name, role, status]
+      properties:
+        name:
+          type: string
+        role:
+          $ref: "#/components/schemas/Role"
+        status:
+          type: string
+          enum: [active, inactive]
+    ProductRequest:
+      type: object
+      required: [name, sku, cost_in_cents]
+      properties:
+        name:
+          type: string
+        sku:
+          type: string
+        barcode:
+          type: [string, "null"]
+        category:
+          type: [string, "null"]
+        brand:
+          type: [string, "null"]
+        supplier:
+          type: [string, "null"]
+        minimum_stock:
+          type: integer
+          minimum: 0
+        cost_in_cents:
+          type: integer
+          minimum: 0
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+    Product:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        tenant_id:
+          $ref: "#/components/schemas/Uuid"
+        name:
+          type: string
+        sku:
+          type: string
+        barcode:
+          type: [string, "null"]
+        category:
+          type: string
+        brand:
+          type: string
+        supplier:
+          type: string
+        minimum_stock:
+          type: integer
+        cost_in_cents:
+          type: integer
+        currency:
+          type: string
+          example: BRL
+    ProductResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/Product"
+    StockItem:
+      allOf:
+        - $ref: "#/components/schemas/Product"
+        - type: object
+          properties:
+            current_stock:
+              type: integer
+            stock_status:
+              type: string
+              enum: [available, minimum, zero]
+    StockListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/StockItem"
+        meta:
+          $ref: "#/components/schemas/TotalMeta"
+    RegisterStockEntryRequest:
+      type: object
+      required: [product_id, type, quantity, reason]
+      properties:
+        product_id:
+          $ref: "#/components/schemas/Uuid"
+        type:
+          type: string
+          enum: [purchase, manual_adjustment, return]
+        quantity:
+          type: integer
+          minimum: 1
+        reason:
+          type: string
+        note:
+          type: [string, "null"]
+        unit_cost_in_cents:
+          type: [integer, "null"]
+    RegisterStockOutputRequest:
+      type: object
+      required: [product_id, type, quantity, reason]
+      properties:
+        product_id:
+          $ref: "#/components/schemas/Uuid"
+        type:
+          type: string
+          enum: [service_consumption, loss, breakage, manual_adjustment]
+        quantity:
+          type: integer
+          minimum: 1
+        reason:
+          type: string
+        note:
+          type: [string, "null"]
+    RegisterStockAdjustmentRequest:
+      type: object
+      required: [product_id, direction, quantity, reason]
+      properties:
+        product_id:
+          $ref: "#/components/schemas/Uuid"
+        direction:
+          type: string
+          enum: [entry, output]
+        quantity:
+          type: integer
+          minimum: 1
+        reason:
+          type: string
+        note:
+          type: [string, "null"]
+    RegisterStockMovementResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            movement_id:
+              $ref: "#/components/schemas/Uuid"
+            inventory_item_id:
+              $ref: "#/components/schemas/Uuid"
+            tenant_id:
+              $ref: "#/components/schemas/Uuid"
+            product_id:
+              $ref: "#/components/schemas/Uuid"
+            type:
+              type: string
+            quantity:
+              type: integer
+            current_stock:
+              type: integer
+            reason:
+              type: string
+            note:
+              type: [string, "null"]
+            occurred_at:
+              type: string
+              format: date-time
+    StockMovement:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        tenant_id:
+          $ref: "#/components/schemas/Uuid"
+        product_id:
+          $ref: "#/components/schemas/Uuid"
+        product:
+          type: object
+          properties:
+            name:
+              type: string
+            sku:
+              type: string
+        user_id:
+          $ref: "#/components/schemas/Uuid"
+        direction:
+          type: string
+          enum: [entry, output]
+        type:
+          type: string
+        quantity:
+          type: integer
+        reason:
+          type: string
+        note:
+          type: [string, "null"]
+        unit_cost_in_cents:
+          type: [integer, "null"]
+        occurred_at:
+          type: string
+          format: date-time
+        service_order:
+          type: [object, "null"]
+          properties:
+            id:
+              $ref: "#/components/schemas/Uuid"
+            item_id:
+              $ref: "#/components/schemas/Uuid"
+    StockMovementHistoryResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/StockMovement"
+        meta:
+          $ref: "#/components/schemas/TotalMeta"
+    MinimumStockAlertsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                $ref: "#/components/schemas/Uuid"
+              product:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  sku:
+                    type: string
+              current_stock:
+                type: integer
+              minimum_stock:
+                type: integer
+              shortage_quantity:
+                type: integer
+        meta:
+          $ref: "#/components/schemas/TotalMeta"
+    ZeroStockAlertsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                example: zero_stock
+              product_id:
+                $ref: "#/components/schemas/Uuid"
+              product:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  sku:
+                    type: string
+              current_stock:
+                type: integer
+              minimum_stock:
+                type: integer
+        meta:
+          $ref: "#/components/schemas/TotalMeta"
+    DashboardResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            total_products:
+              type: integer
+            products_below_minimum:
+              type: integer
+            products_zero_stock:
+              type: integer
+            total_stock_value_in_cents:
+              type: integer
+            today_movements:
+              type: integer
+            recent_movements:
+              type: array
+              items:
+                $ref: "#/components/schemas/StockMovement"
+    MostConsumedProductsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                $ref: "#/components/schemas/Uuid"
+              product:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  sku:
+                    type: string
+              total_quantity:
+                type: integer
+              movements_count:
+                type: integer
+        meta:
+          $ref: "#/components/schemas/TotalMeta"
+    VehicleRequest:
+      type: object
+      required: [plate, brand, model, year, owner_name, owner_phone]
+      properties:
+        plate:
+          type: string
+        brand:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+        owner_name:
+          type: string
+        owner_phone:
+          type: string
+    Vehicle:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        tenant_id:
+          $ref: "#/components/schemas/Uuid"
+        plate:
+          type: string
+        brand:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+        owner_name:
+          type: string
+        owner_phone:
+          type: string
+    VehicleResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/Vehicle"
+    VehicleListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Vehicle"
+        meta:
+          $ref: "#/components/schemas/TotalMeta"
+    CreateServiceOrderRequest:
+      type: object
+      required: [vehicle_id, customer_name, services_description]
+      properties:
+        vehicle_id:
+          $ref: "#/components/schemas/Uuid"
+        customer_name:
+          type: string
+        services_description:
+          type: string
+        observations:
+          type: [string, "null"]
+    CreateServiceOrderResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/ServiceOrderSummary"
+    ServiceOrderSummary:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        tenant_id:
+          $ref: "#/components/schemas/Uuid"
+        vehicle_id:
+          $ref: "#/components/schemas/Uuid"
+        created_by_user_id:
+          $ref: "#/components/schemas/Uuid"
+        customer_name:
+          type: string
+        services_description:
+          type: string
+        observations:
+          type: [string, "null"]
+        status:
+          type: string
+          enum: [open, finished]
+        opened_at:
+          type: string
+          format: date-time
+        finished_at:
+          type: [string, "null"]
+          format: date-time
+    ServiceOrderListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/ServiceOrderSummary"
+              - type: object
+                properties:
+                  vehicle:
+                    $ref: "#/components/schemas/Vehicle"
+        meta:
+          $ref: "#/components/schemas/TotalMeta"
+    ServiceOrderDetailsResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+            - $ref: "#/components/schemas/ServiceOrderSummary"
+            - type: object
+              properties:
+                vehicle:
+                  $ref: "#/components/schemas/Vehicle"
+                parts:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/ServiceOrderPart"
+        meta:
+          type: object
+          properties:
+            parts_total:
+              type: integer
+    ServiceOrderPart:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        product_id:
+          $ref: "#/components/schemas/Uuid"
+        product_name:
+          type: string
+        product_sku:
+          type: string
+        added_by_user_id:
+          $ref: "#/components/schemas/Uuid"
+        quantity:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        movements:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                $ref: "#/components/schemas/Uuid"
+              direction:
+                type: string
+                enum: [entry, output]
+              type:
+                type: string
+              quantity:
+                type: integer
+              reason:
+                type: string
+              note:
+                type: [string, "null"]
+              occurred_at:
+                type: string
+                format: date-time
+        movements_total:
+          type: integer
+    AddPartToServiceOrderRequest:
+      type: object
+      required: [product_id, quantity]
+      properties:
+        product_id:
+          $ref: "#/components/schemas/Uuid"
+        quantity:
+          type: integer
+          minimum: 1
+    AddPartToServiceOrderResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            id:
+              $ref: "#/components/schemas/Uuid"
+            tenant_id:
+              $ref: "#/components/schemas/Uuid"
+            service_order_id:
+              $ref: "#/components/schemas/Uuid"
+            product_id:
+              $ref: "#/components/schemas/Uuid"
+            added_by_user_id:
+              $ref: "#/components/schemas/Uuid"
+            quantity:
+              type: integer
+    FinishServiceOrderResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            id:
+              $ref: "#/components/schemas/Uuid"
+            tenant_id:
+              $ref: "#/components/schemas/Uuid"
+            status:
+              type: string
+              enum: [finished]
+            finished_at:
+              type: string
+              format: date-time
+            movement_ids:
+              type: array
+              items:
+                $ref: "#/components/schemas/Uuid"
+    TotalMeta:
+      type: object
+      properties:
+        total:
+          type: integer

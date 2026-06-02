@@ -225,6 +225,40 @@ docs/arquitetura/setup-backend-docker.md
 docs/arquitetura/sequencia-implementacao-modulos-use-cases.md
 ```
 
+## Documentacao OpenAPI
+
+A especificacao OpenAPI da API v1 esta em:
+
+```text
+backend/docs/openapi.yaml
+```
+
+Ela documenta:
+
+- endpoints disponiveis;
+- payloads de entrada;
+- respostas principais;
+- autenticacao `Authorization: Bearer`;
+- matriz de permissoes por perfil.
+
+Validar sintaxe YAML localmente:
+
+```bash
+ruby -e "require 'yaml'; YAML.load_file('backend/docs/openapi.yaml'); puts 'ok'"
+```
+
+Visualizar com Swagger UI:
+
+```bash
+docker run --rm -p 8081:8080 -e SWAGGER_JSON=/openapi.yaml -v "$PWD/backend/docs/openapi.yaml:/openapi.yaml" swaggerapi/swagger-ui
+```
+
+Depois acesse:
+
+```text
+http://localhost:8081
+```
+
 ## API Inicial
 
 Rotas disponiveis na fundacao tecnica:
