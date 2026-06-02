@@ -472,6 +472,8 @@ GET /api/v1/inventory/movements?direction=output&type=service_consumption&limit=
 Authorization: Bearer {access_token}
 ```
 
+Quando uma movimentacao tiver sido gerada pela finalizacao de uma ordem de servico, a resposta inclui `service_order` com `id` da ordem e `item_id` da peca da OS que originou a baixa. Movimentacoes manuais ou sem vinculo retornam `service_order` como `null`.
+
 ### Registrar Ajuste Manual De Estoque
 
 ```http
@@ -721,7 +723,7 @@ GET /api/v1/service-orders/018f95f2-0f08-7f85-9b31-2d833a1a2f43
 Authorization: Bearer {access_token}
 ```
 
-A resposta inclui dados da ordem, veiculo vinculado e pecas adicionadas com nome, SKU e quantidade.
+A resposta inclui dados da ordem, veiculo vinculado e pecas adicionadas com nome, SKU e quantidade. Quando a OS ja foi finalizada e gerou baixas de estoque, cada peca tambem retorna `movements` com as movimentacoes vinculadas formalmente pela tabela `service_order_stock_movements`.
 
 ### Adicionar Peca A Ordem De Servico
 

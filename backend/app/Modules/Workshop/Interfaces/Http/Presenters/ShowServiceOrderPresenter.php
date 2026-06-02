@@ -4,6 +4,7 @@ namespace App\Modules\Workshop\Interfaces\Http\Presenters;
 
 use App\Modules\Shared\Application\Contracts\OutputDto;
 use App\Modules\Shared\Interfaces\Http\Presenters\JsonPresenter;
+use App\Modules\Workshop\Application\UseCases\ShowServiceOrder\Dtos\ServiceOrderPartMovementOutput;
 use App\Modules\Workshop\Application\UseCases\ShowServiceOrder\Dtos\ServiceOrderPartOutput;
 use App\Modules\Workshop\Application\UseCases\ShowServiceOrder\Dtos\ShowServiceOrderOutput;
 use Illuminate\Http\JsonResponse;
@@ -43,6 +44,19 @@ final class ShowServiceOrderPresenter implements JsonPresenter
                         'added_by_user_id' => $part->addedByUserId,
                         'quantity' => $part->quantity,
                         'created_at' => $part->createdAt,
+                        'movements' => array_map(
+                            fn (ServiceOrderPartMovementOutput $movement): array => [
+                                'id' => $movement->id,
+                                'direction' => $movement->direction,
+                                'type' => $movement->type,
+                                'quantity' => $movement->quantity,
+                                'reason' => $movement->reason,
+                                'note' => $movement->note,
+                                'occurred_at' => $movement->occurredAt,
+                            ],
+                            $part->movements,
+                        ),
+                        'movements_total' => $part->movementsTotal(),
                     ],
                     $output->parts,
                 ),

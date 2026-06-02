@@ -18,5 +18,6 @@ final readonly class ListStockMovementHistoryItemOutput
         public ?string $note,
         public ?int $unitCostInCents,
         public string $occurredAt,
+        public ?StockMovementServiceOrderOutput $serviceOrder = null,
     ) {}
 }

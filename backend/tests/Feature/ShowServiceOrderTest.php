@@ -32,7 +32,32 @@ class ShowServiceOrderTest extends TestCase
             ->assertJsonPath('data.parts.0.product_id', $productId)
             ->assertJsonPath('data.parts.0.product_name', 'Filtro de oleo')
             ->assertJsonPath('data.parts.0.quantity', 2)
+            ->assertJsonPath('data.parts.0.movements', [])
+            ->assertJsonPath('data.parts.0.movements_total', 0)
             ->assertJsonPath('meta.parts_total', 1);
+    }
+
+    public function test_it_shows_stock_movements_linked_to_service_order_parts(): void
+    {
+        $tenantId = $this->createTenant();
+        $vehicleId = $this->createVehicle($tenantId);
+        $serviceOrderId = $this->createServiceOrder($tenantId, $vehicleId);
+        $productId = $this->createProduct($tenantId);
+        $itemId = $this->createServiceOrderItem($tenantId, $serviceOrderId, $productId, quantity: 2);
+        $movementId = $this->createStockMovement($tenantId, $productId, quantity: 2);
+        $this->createServiceOrderStockMovementLink($tenantId, $serviceOrderId, $itemId, $movementId);
+
+        $response = $this->withHeaders($this->authHeaders($tenantId))
+            ->getJson("/api/v1/service-orders/{$serviceOrderId}");
+
+        $response->assertOk()
+            ->assertJsonPath('data.parts.0.id', $itemId)
+            ->assertJsonPath('data.parts.0.movements_total', 1)
+            ->assertJsonPath('data.parts.0.movements.0.id', $movementId)
+            ->assertJsonPath('data.parts.0.movements.0.direction', 'output')
+            ->assertJsonPath('data.parts.0.movements.0.type', 'service_consumption')
+            ->assertJsonPath('data.parts.0.movements.0.quantity', 2)
+            ->assertJsonPath('data.parts.0.movements.0.reason', 'Consumo em ordem de servico');
     }
 
     public function test_it_rejects_service_order_from_another_tenant(): void
@@ -146,5 +171,45 @@ class ShowServiceOrderTest extends TestCase
         ]);
 
         return $itemId;
+    }
+
+    private function createStockMovement(string $tenantId, string $productId, int $quantity): string
+    {
+        $movementId = fake()->uuid();
+
+        DB::table('stock_movements')->insert([
+            'id' => $movementId,
+            'tenant_id' => $tenantId,
+            'product_id' => $productId,
+            'user_id' => fake()->uuid(),
+            'direction' => 'output',
+            'type' => 'service_consumption',
+            'quantity' => $quantity,
+            'reason' => 'Consumo em ordem de servico',
+            'note' => null,
+            'unit_cost_in_cents' => null,
+            'occurred_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return $movementId;
+    }
+
+    private function createServiceOrderStockMovementLink(
+        string $tenantId,
+        string $serviceOrderId,
+        string $serviceOrderItemId,
+        string $stockMovementId,
+    ): void {
+        DB::table('service_order_stock_movements')->insert([
+            'id' => fake()->uuid(),
+            'tenant_id' => $tenantId,
+            'service_order_id' => $serviceOrderId,
+            'service_order_item_id' => $serviceOrderItemId,
+            'stock_movement_id' => $stockMovementId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

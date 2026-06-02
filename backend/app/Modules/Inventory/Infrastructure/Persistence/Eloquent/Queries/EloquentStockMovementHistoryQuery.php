@@ -5,6 +5,7 @@ namespace App\Modules\Inventory\Infrastructure\Persistence\Eloquent\Queries;
 use App\Modules\Inventory\Application\UseCases\ListStockMovementHistory\Contracts\StockMovementHistoryQuery;
 use App\Modules\Inventory\Application\UseCases\ListStockMovementHistory\Dtos\ListStockMovementHistoryInput;
 use App\Modules\Inventory\Application\UseCases\ListStockMovementHistory\Dtos\ListStockMovementHistoryItemOutput;
+use App\Modules\Inventory\Application\UseCases\ListStockMovementHistory\Dtos\StockMovementServiceOrderOutput;
 use App\Modules\Inventory\Infrastructure\Persistence\Eloquent\Models\StockMovementModel;
 use Carbon\CarbonImmutable;
 
@@ -27,8 +28,16 @@ final class EloquentStockMovementHistoryQuery implements StockMovementHistoryQue
                 'stock_movements.note',
                 'stock_movements.unit_cost_in_cents',
                 'stock_movements.occurred_at',
+                'service_order_stock_movements.service_order_id',
+                'service_order_stock_movements.service_order_item_id',
             ])
             ->join('products', 'products.id', '=', 'stock_movements.product_id')
+            ->leftJoin(
+                'service_order_stock_movements',
+                'service_order_stock_movements.stock_movement_id',
+                '=',
+                'stock_movements.id',
+            )
             ->where('stock_movements.tenant_id', $input->tenantId);
 
         if ($input->productId !== null) {
@@ -76,6 +85,12 @@ final class EloquentStockMovementHistoryQuery implements StockMovementHistoryQue
                     ? null
                     : (int) $movement->getAttribute('unit_cost_in_cents'),
                 occurredAt: CarbonImmutable::parse($movement->getAttribute('occurred_at'))->toAtomString(),
+                serviceOrder: $movement->getAttribute('service_order_id') === null
+                    ? null
+                    : new StockMovementServiceOrderOutput(
+                        id: (string) $movement->getAttribute('service_order_id'),
+                        itemId: (string) $movement->getAttribute('service_order_item_id'),
+                    ),
             ))
             ->all();
     }

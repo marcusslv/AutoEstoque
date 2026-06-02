@@ -32,6 +32,12 @@ final class ListStockMovementHistoryPresenter implements JsonPresenter
                     'note' => $item->note,
                     'unit_cost_in_cents' => $item->unitCostInCents,
                     'occurred_at' => $item->occurredAt,
+                    'service_order' => $item->serviceOrder === null
+                        ? null
+                        : [
+                            'id' => $item->serviceOrder->id,
+                            'item_id' => $item->serviceOrder->itemId,
+                        ],
                 ],
                 $output->items,
             ),

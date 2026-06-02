@@ -3,6 +3,7 @@
 namespace App\Modules\Workshop\Infrastructure\Persistence\Eloquent\Queries;
 
 use App\Modules\Workshop\Application\UseCases\ShowServiceOrder\Contracts\ServiceOrderDetailsQuery;
+use App\Modules\Workshop\Application\UseCases\ShowServiceOrder\Dtos\ServiceOrderPartMovementOutput;
 use App\Modules\Workshop\Application\UseCases\ShowServiceOrder\Dtos\ServiceOrderPartOutput;
 use App\Modules\Workshop\Application\UseCases\ShowServiceOrder\Dtos\ServiceOrderVehicleOutput;
 use App\Modules\Workshop\Application\UseCases\ShowServiceOrder\Dtos\ShowServiceOrderInput;
@@ -75,6 +76,8 @@ final class EloquentServiceOrderDetailsQuery implements ServiceOrderDetailsQuery
      */
     private function parts(ShowServiceOrderInput $input): array
     {
+        $movementsByItem = $this->movementsByItem($input);
+
         return ServiceOrderItemModel::query()
             ->select([
                 'service_order_items.id',
@@ -98,7 +101,55 @@ final class EloquentServiceOrderDetailsQuery implements ServiceOrderDetailsQuery
                 addedByUserId: (string) $item->getAttribute('added_by_user_id'),
                 quantity: (int) $item->getAttribute('quantity'),
                 createdAt: CarbonImmutable::parse($item->getAttribute('created_at'))->toAtomString(),
+                movements: $movementsByItem[(string) $item->getAttribute('id')] ?? [],
             ))
             ->all();
+    }
+
+    /**
+     * @return array<string, array<int, ServiceOrderPartMovementOutput>>
+     */
+    private function movementsByItem(ShowServiceOrderInput $input): array
+    {
+        $movements = ServiceOrderItemModel::query()
+            ->select([
+                'service_order_stock_movements.service_order_item_id',
+                'stock_movements.id',
+                'stock_movements.direction',
+                'stock_movements.type',
+                'stock_movements.quantity',
+                'stock_movements.reason',
+                'stock_movements.note',
+                'stock_movements.occurred_at',
+            ])
+            ->join(
+                'service_order_stock_movements',
+                'service_order_stock_movements.service_order_item_id',
+                '=',
+                'service_order_items.id',
+            )
+            ->join('stock_movements', 'stock_movements.id', '=', 'service_order_stock_movements.stock_movement_id')
+            ->where('service_order_items.tenant_id', $input->tenantId)
+            ->where('service_order_items.service_order_id', $input->serviceOrderId)
+            ->orderBy('stock_movements.occurred_at')
+            ->get();
+
+        $grouped = [];
+
+        foreach ($movements as $movement) {
+            $serviceOrderItemId = (string) $movement->getAttribute('service_order_item_id');
+
+            $grouped[$serviceOrderItemId][] = new ServiceOrderPartMovementOutput(
+                id: (string) $movement->getAttribute('id'),
+                direction: (string) $movement->getAttribute('direction'),
+                type: (string) $movement->getAttribute('type'),
+                quantity: (int) $movement->getAttribute('quantity'),
+                reason: (string) $movement->getAttribute('reason'),
+                note: $movement->getAttribute('note'),
+                occurredAt: CarbonImmutable::parse($movement->getAttribute('occurred_at'))->toAtomString(),
+            );
+        }
+
+        return $grouped;
     }
 }
