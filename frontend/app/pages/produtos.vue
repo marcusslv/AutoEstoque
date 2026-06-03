@@ -5,11 +5,10 @@ definePageMeta({
   permission: 'catalog',
   title: 'Produtos',
 })
+
+await navigateTo('/products', { replace: true })
 </script>
 
 <template>
-  <EmptyState
-    title="Produtos"
-    description="Esta tela sera implementada na fase de manutencao de produtos."
-  />
+  <LoadingState message="Abrindo cadastro de produtos..." />
 </template>

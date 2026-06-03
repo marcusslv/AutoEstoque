@@ -36,7 +36,7 @@ const { canAccess } = usePermissions()
 
 const navigationItems: NavigationItem[] = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard, permission: 'dashboard', enabled: true },
-  { label: 'Produtos', to: '/produtos', icon: Package, permission: 'catalog', enabled: false },
+  { label: 'Produtos', to: '/products', icon: Package, permission: 'catalog', enabled: true },
   { label: 'Estoque', to: '/stock', icon: Boxes, permission: 'inventory', enabled: true },
   { label: 'Alertas', to: '/alertas', icon: Bell, permission: 'inventory', enabled: false },
   { label: 'Veiculos', to: '/veiculos', icon: Car, permission: 'workshop', enabled: false },
