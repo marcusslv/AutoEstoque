@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import LoginForm from '~/modules/auth/components/LoginForm.vue'
+
 definePageMeta({
   layout: 'public',
+  middleware: 'guest',
   title: 'Login',
 })
 </script>
@@ -17,18 +20,6 @@ definePageMeta({
       </p>
     </div>
 
-    <form class="mt-6 space-y-4">
-      <FormField label="E-mail">
-        <AppInput type="email" placeholder="owner@autoestoque.test" autocomplete="email" />
-      </FormField>
-
-      <FormField label="Senha">
-        <AppInput type="password" placeholder="password" autocomplete="current-password" />
-      </FormField>
-
-      <AppButton class="w-full" type="button">
-        Entrar
-      </AppButton>
-    </form>
+    <LoginForm />
   </section>
 </template>

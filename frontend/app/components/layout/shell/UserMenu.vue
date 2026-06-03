@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { LogOut, User } from 'lucide-vue-next'
+import { useAuth } from '~/modules/auth/composables/useAuth'
 
 const open = ref(false)
+const { user, logout, loading } = useAuth()
 </script>
 
 <template>
@@ -16,10 +18,10 @@ const open = ref(false)
     >
       <div class="px-2 py-2">
         <p class="text-sm font-medium">
-          Usuario Demo
+          {{ user?.name ?? 'Usuario' }}
         </p>
         <p class="text-xs text-muted-foreground">
-          owner@autoestoque.test
+          {{ user?.email ?? 'Sessao ativa' }}
         </p>
       </div>
 
@@ -27,10 +29,12 @@ const open = ref(false)
 
       <button
         type="button"
+        :disabled="loading"
         class="mt-2 flex h-9 w-full items-center gap-2 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+        @click="logout"
       >
         <LogOut class="h-4 w-4" />
-        Sair
+        {{ loading ? 'Saindo...' : 'Sair' }}
       </button>
     </div>
   </div>

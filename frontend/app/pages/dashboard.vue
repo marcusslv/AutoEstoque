@@ -3,6 +3,7 @@ import { Bell, Boxes, PackageSearch, Wrench } from 'lucide-vue-next'
 
 definePageMeta({
   layout: 'authenticated',
+  middleware: 'auth',
   title: 'Dashboard',
 })
 

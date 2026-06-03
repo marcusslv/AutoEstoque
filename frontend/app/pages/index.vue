@@ -3,6 +3,7 @@ import { Boxes, ClipboardList, PackageSearch, Plus, RefreshCw } from 'lucide-vue
 
 definePageMeta({
   layout: 'authenticated',
+  middleware: 'auth',
   title: 'Atomic Design',
 })
 
