@@ -4,6 +4,12 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@nuxtjs/tailwindcss',
   ],
+  components: [
+    {
+      path: '~/components',
+      pathPrefix: false,
+    },
+  ],
   css: ['~/assets/css/tailwind.css'],
   runtimeConfig: {
     public: {
@@ -16,5 +22,10 @@ export default defineNuxtConfig({
   },
   devtools: {
     enabled: true,
+  },
+  vite: {
+    optimizeDeps: {
+      include: ['lucide-vue-next'],
+    },
   },
 })

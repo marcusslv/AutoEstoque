@@ -2,6 +2,11 @@
 defineProps<{
   title?: string
   description?: string
+  actionLabel?: string
+}>()
+
+defineEmits<{
+  action: []
 }>()
 </script>
 
@@ -13,5 +18,8 @@ defineProps<{
     <p v-if="description" class="mt-1 text-sm text-muted-foreground">
       {{ description }}
     </p>
+    <AppButton v-if="actionLabel" class="mt-4" size="sm" @click="$emit('action')">
+      {{ actionLabel }}
+    </AppButton>
   </div>
 </template>
