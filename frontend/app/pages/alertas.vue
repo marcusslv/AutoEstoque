@@ -2,14 +2,13 @@
 definePageMeta({
   layout: 'authenticated',
   middleware: ['auth', 'role'],
-  permission: 'inventory',
+  permission: 'manual_inventory',
   title: 'Alertas',
 })
+
+await navigateTo('/inventory/alerts', { replace: true })
 </script>
 
 <template>
-  <EmptyState
-    title="Alertas"
-    description="Esta tela sera implementada na fase de alertas operacionais."
-  />
+  <LoadingState message="Abrindo alertas de estoque..." />
 </template>

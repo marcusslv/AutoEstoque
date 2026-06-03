@@ -1,5 +1,10 @@
 import type { ApiClient } from '~/shared/api/apiClient'
 import type {
+  InventoryAlert,
+  MinimumStockAlertsResponse,
+  ZeroStockAlertsResponse,
+} from '../types/alert'
+import type {
   RegisterStockAdjustmentPayload,
   RegisterStockEntryPayload,
   RegisterStockMovementResponse,
@@ -43,6 +48,30 @@ const mapMovement = (movement: StockMovementResponse['data'][number]): StockMove
       },
 })
 
+const mapMinimumStockAlert = (alert: MinimumStockAlertsResponse['data'][number]): InventoryAlert => ({
+  type: 'minimum_stock',
+  productId: alert.product_id,
+  product: {
+    name: alert.product.name,
+    sku: alert.product.sku,
+  },
+  currentStock: alert.current_stock,
+  minimumStock: alert.minimum_stock,
+  shortageQuantity: alert.shortage_quantity,
+})
+
+const mapZeroStockAlert = (alert: ZeroStockAlertsResponse['data'][number]): InventoryAlert => ({
+  type: 'zero_stock',
+  productId: alert.product_id,
+  product: {
+    name: alert.product.name,
+    sku: alert.product.sku,
+  },
+  currentStock: alert.current_stock,
+  minimumStock: alert.minimum_stock,
+  shortageQuantity: Math.max(0, alert.minimum_stock - alert.current_stock),
+})
+
 const toEntryPayload = (values: StockMovementFormValues): RegisterStockEntryPayload => ({
   product_id: values.productId,
   type: values.type as StockEntryType,
@@ -69,6 +98,28 @@ const toAdjustmentPayload = (values: StockMovementFormValues): RegisterStockAdju
 })
 
 export const createInventoryApi = (api: ApiClient) => {
+  const listMinimumStockAlerts = async (limit = 50) => {
+    const response = await api.get<MinimumStockAlertsResponse>('/inventory/alerts/minimum-stock', {
+      query: { limit },
+    })
+
+    return {
+      items: response.data.map(mapMinimumStockAlert),
+      total: response.meta.total,
+    }
+  }
+
+  const listZeroStockAlerts = async (limit = 50) => {
+    const response = await api.get<ZeroStockAlertsResponse>('/inventory/alerts/zero-stock', {
+      query: { limit },
+    })
+
+    return {
+      items: response.data.map(mapZeroStockAlert),
+      total: response.meta.total,
+    }
+  }
+
   const listMovements = async (filters: StockMovementFilters = {}): Promise<StockMovementListResult> => {
     const response = await api.get<StockMovementResponse>('/inventory/movements', {
       query: {
@@ -100,6 +151,8 @@ export const createInventoryApi = (api: ApiClient) => {
   }
 
   return {
+    listMinimumStockAlerts,
+    listZeroStockAlerts,
     listMovements,
     registerEntry,
     registerOutput,
