@@ -44,6 +44,30 @@ class AuthenticateUserTest extends TestCase
         ]);
     }
 
+    public function test_it_issues_token_using_internal_user_id_when_public_id_exists(): void
+    {
+        $tenantId = $this->createTenant();
+        $publicId = fake()->uuid();
+        $userId = $this->createUser($tenantId, publicId: $publicId);
+
+        $response = $this->postJson('/api/v1/auth/login', [
+            'email' => 'admin@oficina.com',
+            'password' => 'secret',
+            'token_name' => 'mobile',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.user.id', $publicId);
+
+        $plainToken = (string) $response->json('data.access_token');
+
+        $this->assertDatabaseHas('user_access_tokens', [
+            'user_id' => $userId,
+            'name' => 'mobile',
+            'token_hash' => hash('sha256', $plainToken),
+        ]);
+    }
+
     public function test_it_rejects_invalid_credentials(): void
     {
         $tenantId = $this->createTenant();
@@ -112,10 +136,11 @@ class AuthenticateUserTest extends TestCase
         return $tenantId;
     }
 
-    private function createUser(?string $tenantId, string $status = 'active'): int
+    private function createUser(?string $tenantId, string $status = 'active', ?string $publicId = null): int
     {
         return (int) DB::table('users')->insertGetId([
             'tenant_id' => $tenantId,
+            'public_id' => $publicId,
             'name' => 'Admin Oficina',
             'email' => 'admin@oficina.com',
             'password' => Hash::make('secret'),
