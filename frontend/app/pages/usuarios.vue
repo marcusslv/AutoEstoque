@@ -5,11 +5,10 @@ definePageMeta({
   permission: 'users',
   title: 'Usuarios',
 })
+
+await navigateTo('/users', { replace: true })
 </script>
 
 <template>
-  <EmptyState
-    title="Usuarios"
-    description="Esta tela sera implementada na fase de gestao de usuarios."
-  />
+  <LoadingState message="Abrindo gestao de usuarios..." />
 </template>

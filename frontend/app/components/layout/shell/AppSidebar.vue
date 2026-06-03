@@ -43,7 +43,7 @@ const navigationItems: NavigationItem[] = [
   { label: 'Alertas', to: '/inventory/alerts', icon: Bell, permission: 'manual_inventory', enabled: true },
   { label: 'Veiculos', to: '/vehicles', icon: Car, permission: 'workshop', enabled: true },
   { label: 'Ordens de servico', to: '/service-orders', icon: ClipboardList, permission: 'workshop', enabled: true },
-  { label: 'Usuarios', to: '/usuarios', icon: Users, permission: 'users', enabled: false },
+  { label: 'Usuarios', to: '/users', icon: Users, permission: 'users', enabled: true },
   { label: 'Configuracoes', to: '/configuracoes', icon: Settings, permission: 'settings', enabled: false },
 ]
 
