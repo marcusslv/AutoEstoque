@@ -1,24 +1,31 @@
-# Sequencia De Implementacao Do Front-end Nuxt
+# Sequencia De Implementacao Do Front-end Nuxt Com Atomic Design
 
-Este documento define a ordem recomendada para implementar o front-end web do AutoEstoque usando Nuxt, Vue, TypeScript, Tailwind CSS e Shadcn Vue.
+Este documento define a ordem recomendada para implementar o front-end web do AutoEstoque usando Nuxt, Vue, TypeScript, Tailwind CSS, Shadcn Vue, Pinia e Atomic Design.
 
-O objetivo e construir o painel administrativo de forma incremental, conectando cada etapa ao backend ja existente e evitando criar telas desconectadas da API real.
+A arquitetura oficial do front-end sera hibrida:
+
+- **Atomic Design** para componentes visuais reutilizaveis.
+- **Modulos por dominio** para regras, services, composables, stores, types e componentes especificos do AutoEstoque.
+
+O objetivo e construir o painel administrativo de forma incremental, conectado ao backend real e com uma base visual consistente desde o inicio.
 
 ## 1. Principios Da Sequencia
 
-A implementacao deve seguir alguns principios:
+A implementacao deve seguir estes principios:
 
-- entregar fatias pequenas e testaveis;
 - iniciar pela base tecnica;
+- criar Atomic Design antes das telas de dominio;
 - conectar cedo com a API real;
+- manter pages finas;
+- concentrar regra de negocio nos modulos;
 - proteger rotas desde o inicio;
 - respeitar permissoes por perfil;
-- priorizar fluxos centrais do MVP;
-- evitar telas grandes antes da base de layout, auth e API estar pronta.
+- entregar fatias pequenas e testaveis;
+- evitar telas grandes antes de layout, auth e cliente API estarem prontos.
 
 ## 2. Dependencias De Backend
 
-O front-end deve usar como contrato principal:
+Contrato principal:
 
 ```text
 backend/docs/openapi.yaml
@@ -39,11 +46,71 @@ Usuarios demo criados pelo seeder:
 | admin | admin@autoestoque.test | password |
 | mechanic | mechanic@autoestoque.test | password |
 
-## 3. Fase 0 - Setup Tecnico Do Front-end
+## 3. Estrutura Alvo
+
+```text
+frontend/
+  app/
+    assets/
+    components/
+      ui/
+        atoms/
+        molecules/
+        organisms/
+      layout/
+        templates/
+        shell/
+      feedback/
+    layouts/
+    middleware/
+    modules/
+      auth/
+        components/
+        composables/
+        services/
+        stores/
+        types/
+      dashboard/
+        components/
+        composables/
+        services/
+        types/
+      catalog/
+        components/
+        composables/
+        services/
+        types/
+      inventory/
+        components/
+        composables/
+        services/
+        types/
+      workshop/
+        components/
+        composables/
+        services/
+        types/
+      users/
+        components/
+        composables/
+        services/
+        types/
+    pages/
+    plugins/
+    shared/
+      api/
+      auth/
+      errors/
+      permissions/
+      types/
+      utils/
+```
+
+## 4. Fase 0 - Setup Tecnico Do Front-end
 
 Objetivo:
 
-Criar a base do projeto Nuxt e deixar a aplicacao rodando localmente.
+Criar o projeto Nuxt e preparar a base tecnica.
 
 Entregas:
 
@@ -53,22 +120,34 @@ Entregas:
 - configurar Shadcn Vue;
 - configurar Pinia;
 - configurar variavel `NUXT_PUBLIC_API_BASE_URL`;
-- criar estrutura inicial de pastas;
+- criar estrutura de pastas da arquitetura;
 - criar pagina inicial temporaria;
 - validar servidor local.
 
-Estrutura inicial esperada:
+Pastas esperadas nesta fase:
 
 ```text
 frontend/
   app/
     components/
+      ui/
+        atoms/
+        molecules/
+        organisms/
+      layout/
+        templates/
+        shell/
+      feedback/
     layouts/
     middleware/
     modules/
     pages/
     plugins/
     shared/
+      api/
+      permissions/
+      types/
+      utils/
   nuxt.config.ts
   package.json
 ```
@@ -79,26 +158,118 @@ Critérios de aceite:
 - `npm run dev` sobe o front-end;
 - Tailwind funciona em uma pagina simples;
 - Shadcn Vue possui ao menos um componente instalado;
-- Pinia esta registrado.
+- Pinia esta registrado;
+- `NUXT_PUBLIC_API_BASE_URL` esta configurado;
+- estrutura Atomic Design esta criada.
 
-## 4. Fase 1 - Base Visual E Layout
+## 5. Fase 1 - Atomic Design Base
 
 Objetivo:
 
-Criar a estrutura visual principal do painel.
+Criar os componentes visuais compartilhados antes das telas de negocio.
+
+Entregas:
+
+- atoms principais;
+- molecules principais;
+- organisms principais;
+- templates principais;
+- feedback components;
+- documentacao breve de uso dos componentes.
+
+Atoms sugeridos:
+
+```text
+components/ui/atoms/
+  AppButton.vue
+  AppInput.vue
+  AppLabel.vue
+  AppTextarea.vue
+  AppSelect.vue
+  AppBadge.vue
+  AppIconButton.vue
+  AppSpinner.vue
+  AppSeparator.vue
+```
+
+Molecules sugeridos:
+
+```text
+components/ui/molecules/
+  FormField.vue
+  SearchInput.vue
+  StatusBadge.vue
+  DateRangeFilter.vue
+  MoneyDisplay.vue
+  MetricCard.vue
+```
+
+Organisms sugeridos:
+
+```text
+components/ui/organisms/
+  PageHeader.vue
+  DataTable.vue
+  FilterToolbar.vue
+  EntityFormDialog.vue
+```
+
+Templates sugeridos:
+
+```text
+components/layout/templates/
+  PublicPageTemplate.vue
+  ListPageTemplate.vue
+  DetailPageTemplate.vue
+  DashboardPageTemplate.vue
+```
+
+Feedback sugeridos:
+
+```text
+components/feedback/
+  LoadingState.vue
+  ErrorState.vue
+  EmptyState.vue
+  ForbiddenState.vue
+  ConfirmDialog.vue
+```
+
+Critérios de aceite:
+
+- atoms nao conhecem dominio;
+- molecules nao chamam API;
+- organisms usam slots/props para serem reutilizaveis;
+- templates nao carregam dados;
+- componentes base podem ser usados em uma pagina temporaria.
+
+## 6. Fase 2 - Layout Shell
+
+Objetivo:
+
+Criar a estrutura visual principal do painel autenticado.
 
 Entregas:
 
 - layout publico;
 - layout autenticado;
+- `AppShell`;
 - sidebar;
 - header;
 - menu do usuario;
-- container principal;
-- componente de loading;
-- componente de erro;
-- componente de estado vazio;
-- componente de acesso negado.
+- breadcrumb opcional;
+- comportamento responsivo.
+
+Arquivos sugeridos:
+
+```text
+layouts/public.vue
+layouts/authenticated.vue
+components/layout/shell/AppShell.vue
+components/layout/shell/AppSidebar.vue
+components/layout/shell/AppHeader.vue
+components/layout/shell/UserMenu.vue
+```
 
 Rotas iniciais:
 
@@ -107,27 +278,14 @@ Rotas iniciais:
 /dashboard
 ```
 
-Componentes sugeridos:
-
-```text
-components/layout/AppShell.vue
-components/layout/AppSidebar.vue
-components/layout/AppHeader.vue
-components/layout/UserMenu.vue
-components/feedback/LoadingState.vue
-components/feedback/ErrorState.vue
-components/feedback/EmptyState.vue
-components/feedback/ForbiddenState.vue
-```
-
 Critérios de aceite:
 
-- layout autenticado exibe sidebar e header;
 - layout publico nao exibe sidebar;
-- interface funciona em desktop e mobile;
-- menu principal ja considera placeholders das telas futuras.
+- layout autenticado exibe sidebar e header;
+- menu principal ja possui placeholders das telas futuras;
+- interface funciona em desktop e mobile.
 
-## 5. Fase 2 - Cliente API E Tratamento De Erros
+## 7. Fase 3 - Cliente API E Tratamento De Erros
 
 Objetivo:
 
@@ -136,44 +294,28 @@ Criar a camada central de comunicacao com o backend.
 Entregas:
 
 - `shared/api/apiClient.ts`;
+- `shared/api/apiErrors.ts`;
+- `shared/api/apiTypes.ts`;
 - tratamento de `401`;
 - tratamento de `403`;
 - tratamento de `409`;
 - tratamento de `422`;
 - tratamento generico de `500`;
-- tipos base de resposta;
 - helper para mensagens de erro.
-
-Arquivos sugeridos:
-
-```text
-shared/api/apiClient.ts
-shared/api/apiErrors.ts
-shared/api/apiTypes.ts
-```
 
 Critérios de aceite:
 
 - cliente usa `NUXT_PUBLIC_API_BASE_URL`;
-- cliente envia `Authorization: Bearer`;
+- cliente envia `Authorization: Bearer` quando houver token;
 - erro `401` limpa sessao;
-- erro `422` pode ser mapeado para campos de formulario.
+- erro `403` pode acionar estado de acesso negado;
+- erro `422` pode ser mapeado para formularios.
 
-## 6. Fase 3 - Autenticacao
+## 8. Fase 4 - Autenticacao
 
 Objetivo:
 
 Permitir login, logout e persistencia de sessao.
-
-Entregas:
-
-- tela de login;
-- auth store com Pinia;
-- persistencia do token;
-- persistencia do usuario autenticado;
-- logout integrado ao backend;
-- middleware de rota autenticada;
-- redirecionamento automatico.
 
 Rotas de API:
 
@@ -182,12 +324,24 @@ POST /api/v1/auth/login
 POST /api/v1/auth/logout
 ```
 
+Entregas:
+
+- tela de login;
+- `authStore`;
+- persistencia do token;
+- persistencia do usuario autenticado;
+- logout integrado ao backend;
+- middleware `auth`;
+- middleware `guest`.
+
 Arquivos sugeridos:
 
 ```text
-modules/auth/stores/authStore.ts
-modules/auth/services/authApi.ts
 modules/auth/components/LoginForm.vue
+modules/auth/composables/useAuth.ts
+modules/auth/services/authApi.ts
+modules/auth/stores/authStore.ts
+modules/auth/types/auth.ts
 middleware/auth.ts
 middleware/guest.ts
 pages/login.vue
@@ -195,17 +349,17 @@ pages/login.vue
 
 Critérios de aceite:
 
-- usuario consegue fazer login com credenciais demo;
+- login funciona com credenciais demo;
 - token e usado nas chamadas autenticadas;
 - logout revoga token;
 - rota interna sem token redireciona para `/login`;
-- usuario autenticado nao deve permanecer em `/login`.
+- usuario autenticado nao permanece em `/login`.
 
-## 7. Fase 4 - Permissoes Por Perfil
+## 9. Fase 5 - Permissoes Por Perfil
 
 Objetivo:
 
-Aplicar no front-end a mesma matriz de permissoes do backend.
+Aplicar no front-end a matriz de permissoes do backend.
 
 Roles:
 
@@ -213,7 +367,7 @@ Roles:
 type Role = 'owner' | 'manager' | 'admin' | 'mechanic'
 ```
 
-Matriz inicial:
+Matriz:
 
 ```ts
 const permissions = {
@@ -242,14 +396,14 @@ Critérios de aceite:
 
 - `mechanic` nao ve menus de usuarios, produtos e movimentacoes manuais;
 - `admin` ve menus de backoffice;
-- acesso direto a rota proibida exibe tela 403 ou redireciona para uma tela permitida;
-- backend continua retornando 403 se o usuario tentar forcar chamada proibida.
+- acesso direto a rota proibida exibe `ForbiddenState`;
+- backend continua retornando `403` se o usuario tentar forcar chamada proibida.
 
-## 8. Fase 5 - Dashboard
+## 10. Fase 6 - Dashboard
 
 Objetivo:
 
-Criar a primeira tela autenticada de valor gerencial.
+Criar a primeira tela autenticada de valor gerencial usando a base Atomic Design.
 
 Rotas de API:
 
@@ -260,12 +414,11 @@ GET /api/v1/dashboard/most-consumed-products
 
 Entregas:
 
-- cards de indicadores;
+- pagina `/dashboard`;
+- cards de indicadores usando `MetricCard`;
 - lista de movimentacoes recentes;
 - ranking de produtos mais consumidos;
-- filtro por data ou periodo;
-- estado vazio;
-- estado de erro.
+- estados de loading, erro e vazio.
 
 Arquivos sugeridos:
 
@@ -283,9 +436,9 @@ Critérios de aceite:
 - dashboard carrega com usuario `admin`;
 - usuario `mechanic` nao acessa dashboard;
 - indicadores batem com dados do backend;
-- loading e erro sao tratados.
+- componentes de feedback sao usados corretamente.
 
-## 9. Fase 6 - Consulta De Estoque
+## 11. Fase 7 - Consulta De Estoque
 
 Objetivo:
 
@@ -300,8 +453,8 @@ GET /api/v1/stock
 Entregas:
 
 - tela `/stock`;
-- busca por produto;
-- tabela de produtos;
+- busca por produto com `SearchInput`;
+- tabela de produtos com `DataTable`;
 - status visual do estoque;
 - destaque para estoque zerado e abaixo do minimo.
 
@@ -317,12 +470,12 @@ pages/stock.vue
 
 Critérios de aceite:
 
-- `mechanic` consegue acessar estoque;
+- `mechanic` acessa estoque;
 - busca funciona;
 - produtos sem saldo aparecem como zero;
-- status e quantidade ficam claros na tabela.
+- status e quantidade ficam claros.
 
-## 10. Fase 7 - Produtos
+## 12. Fase 8 - Produtos
 
 Objetivo:
 
@@ -342,7 +495,7 @@ Entregas:
 - listagem baseada em estoque/produtos;
 - formulario de criacao;
 - formulario de edicao;
-- validacao basica no front;
+- dialogs usando organisms/templates;
 - tratamento de erros `422`;
 - restricao por perfil.
 
@@ -351,6 +504,7 @@ Arquivos sugeridos:
 ```text
 modules/catalog/components/ProductForm.vue
 modules/catalog/components/ProductTable.vue
+modules/catalog/components/ProductDialog.vue
 modules/catalog/composables/useProducts.ts
 pages/products/index.vue
 ```
@@ -359,10 +513,103 @@ Critérios de aceite:
 
 - `admin` cria produto;
 - `admin` edita produto;
-- `mechanic` nao acessa tela de produtos;
+- `mechanic` nao acessa produtos;
 - erros de SKU/codigo de barras duplicados sao exibidos.
 
-## 11. Fase 8 - Movimentacoes De Estoque
+## 13. Fase 9 - Veiculos
+
+Objetivo:
+
+Implementar cadastro e consulta de veiculos.
+
+Rotas de API:
+
+```text
+GET /api/v1/vehicles
+POST /api/v1/vehicles
+```
+
+Entregas:
+
+- tela `/vehicles`;
+- busca;
+- tabela de veiculos;
+- formulario de cadastro;
+- dialog de cadastro;
+- tratamento de placa duplicada.
+
+Arquivos sugeridos:
+
+```text
+modules/workshop/services/workshopApi.ts
+modules/workshop/components/VehicleForm.vue
+modules/workshop/components/VehicleTable.vue
+modules/workshop/components/VehicleDialog.vue
+modules/workshop/composables/useVehicles.ts
+pages/vehicles/index.vue
+```
+
+Critérios de aceite:
+
+- todos os perfis operacionais acessam veiculos;
+- cadastro funciona;
+- busca por placa, modelo ou proprietario funciona;
+- erro de placa duplicada e exibido.
+
+## 14. Fase 10 - Ordens De Servico
+
+Objetivo:
+
+Implementar o fluxo operacional principal da oficina.
+
+Rotas de API:
+
+```text
+GET /api/v1/service-orders
+POST /api/v1/service-orders
+GET /api/v1/service-orders/{serviceOrder}
+POST /api/v1/service-orders/{serviceOrder}/parts
+PATCH /api/v1/service-orders/{serviceOrder}/finish
+```
+
+Entregas:
+
+- tela `/service-orders`;
+- listagem por status;
+- busca;
+- formulario de criacao de OS;
+- detalhe da OS;
+- adicionar pecas;
+- finalizar OS;
+- exibir movimentacoes geradas por peca;
+- bloquear acoes quando OS estiver finalizada.
+
+Arquivos sugeridos:
+
+```text
+modules/workshop/components/ServiceOrderTable.vue
+modules/workshop/components/ServiceOrderForm.vue
+modules/workshop/components/ServiceOrderDetailsPage.vue
+modules/workshop/components/ServiceOrderSummary.vue
+modules/workshop/components/ServiceOrderPartsTable.vue
+modules/workshop/components/AddPartDialog.vue
+modules/workshop/components/FinishServiceOrderDialog.vue
+modules/workshop/composables/useServiceOrders.ts
+modules/workshop/composables/useServiceOrderDetails.ts
+pages/service-orders/index.vue
+pages/service-orders/[id].vue
+```
+
+Critérios de aceite:
+
+- criar OS funciona;
+- adicionar peca funciona;
+- finalizar OS baixa estoque;
+- detalhe da OS mostra movimentacoes vinculadas;
+- erro de estoque insuficiente e exibido;
+- OS finalizada nao permite nova finalizacao.
+
+## 15. Fase 11 - Movimentacoes De Estoque
 
 Objetivo:
 
@@ -393,6 +640,7 @@ Arquivos sugeridos:
 modules/inventory/services/inventoryApi.ts
 modules/inventory/composables/useMovements.ts
 modules/inventory/components/MovementHistoryTable.vue
+modules/inventory/components/MovementOriginLink.vue
 modules/inventory/components/RegisterEntryDialog.vue
 modules/inventory/components/RegisterOutputDialog.vue
 modules/inventory/components/RegisterAdjustmentDialog.vue
@@ -407,7 +655,7 @@ Critérios de aceite:
 - `mechanic` nao acessa movimentacoes manuais;
 - historico mostra OS vinculada quando existir.
 
-## 12. Fase 9 - Alertas De Estoque
+## 16. Fase 12 - Alertas De Estoque
 
 Objetivo:
 
@@ -428,6 +676,14 @@ Entregas:
 - link para produto/estoque;
 - destaque visual por criticidade.
 
+Arquivos sugeridos:
+
+```text
+modules/inventory/composables/useInventoryAlerts.ts
+modules/inventory/components/InventoryAlertsList.vue
+pages/inventory/alerts.vue
+```
+
 Critérios de aceite:
 
 - alertas abaixo do minimo aparecem;
@@ -435,95 +691,7 @@ Critérios de aceite:
 - `mechanic` nao acessa a tela;
 - estado vazio e tratado.
 
-## 13. Fase 10 - Veiculos
-
-Objetivo:
-
-Implementar cadastro e consulta de veiculos.
-
-Rotas de API:
-
-```text
-GET /api/v1/vehicles
-POST /api/v1/vehicles
-```
-
-Entregas:
-
-- tela `/vehicles`;
-- busca;
-- tabela de veiculos;
-- formulario de cadastro;
-- tratamento de placa duplicada.
-
-Arquivos sugeridos:
-
-```text
-modules/workshop/services/workshopApi.ts
-modules/workshop/components/VehicleForm.vue
-modules/workshop/components/VehicleTable.vue
-modules/workshop/composables/useVehicles.ts
-pages/vehicles/index.vue
-```
-
-Critérios de aceite:
-
-- todos os perfis operacionais acessam veiculos;
-- cadastro de veiculo funciona;
-- busca por placa, modelo ou proprietario funciona;
-- erro de placa duplicada e exibido.
-
-## 14. Fase 11 - Ordens De Servico
-
-Objetivo:
-
-Implementar fluxo operacional principal da oficina.
-
-Rotas de API:
-
-```text
-GET /api/v1/service-orders
-POST /api/v1/service-orders
-GET /api/v1/service-orders/{serviceOrder}
-POST /api/v1/service-orders/{serviceOrder}/parts
-PATCH /api/v1/service-orders/{serviceOrder}/finish
-```
-
-Entregas:
-
-- tela `/service-orders`;
-- listagem por status;
-- busca;
-- formulario de criacao de OS;
-- detalhe da OS;
-- adicionar pecas;
-- finalizar OS;
-- exibir movimentacoes geradas por peca;
-- bloquear acoes quando OS estiver finalizada.
-
-Arquivos sugeridos:
-
-```text
-modules/workshop/components/ServiceOrderTable.vue
-modules/workshop/components/ServiceOrderForm.vue
-modules/workshop/components/ServiceOrderDetails.vue
-modules/workshop/components/AddPartDialog.vue
-modules/workshop/components/FinishServiceOrderDialog.vue
-modules/workshop/composables/useServiceOrders.ts
-pages/service-orders/index.vue
-pages/service-orders/[id].vue
-```
-
-Critérios de aceite:
-
-- criar OS funciona;
-- adicionar peca funciona;
-- finalizar OS baixa estoque;
-- detalhe da OS mostra movimentacoes vinculadas;
-- erro de estoque insuficiente e exibido;
-- OS finalizada nao permite nova finalizacao.
-
-## 15. Fase 12 - Usuarios
+## 17. Fase 13 - Usuarios
 
 Objetivo:
 
@@ -548,6 +716,19 @@ Entregas:
 - badge por perfil e status;
 - restricao para backoffice.
 
+Arquivos sugeridos:
+
+```text
+modules/users/services/usersApi.ts
+modules/users/composables/useUsers.ts
+modules/users/components/UserTable.vue
+modules/users/components/UserForm.vue
+modules/users/components/UserDialog.vue
+modules/users/components/DeactivateUserDialog.vue
+modules/users/components/RoleBadge.vue
+pages/users/index.vue
+```
+
 Critérios de aceite:
 
 - `owner`, `manager` e `admin` acessam;
@@ -555,7 +736,7 @@ Critérios de aceite:
 - limite de usuarios retorna mensagem clara;
 - usuario inativado aparece com status correto.
 
-## 16. Fase 13 - Refinamento De UX
+## 18. Fase 14 - Refinamento De UX
 
 Objetivo:
 
@@ -571,7 +752,8 @@ Entregas:
 - estados vazios melhores;
 - mascaras de placa e telefone;
 - formatacao de moeda;
-- formatacao de data.
+- formatacao de data;
+- revisao de contraste e acessibilidade.
 
 Critérios de aceite:
 
@@ -580,7 +762,7 @@ Critérios de aceite:
 - acoes destrutivas pedem confirmacao;
 - usuario sempre entende o resultado de uma acao.
 
-## 17. Fase 14 - Testes Do Front-end
+## 19. Fase 15 - Testes Do Front-end
 
 Objetivo:
 
@@ -590,7 +772,7 @@ Entregas:
 
 - testes de auth store;
 - testes de permissoes;
-- testes de componentes criticos;
+- testes de atoms/molecules criticos;
 - testes de services com mocks;
 - teste E2E do fluxo de login;
 - teste E2E de criar OS e finalizar.
@@ -608,47 +790,58 @@ Critérios de aceite:
 - fluxo de OS testado;
 - pipeline consegue rodar testes.
 
-## 18. Ordem Resumida
+## 20. Ordem Resumida
 
 | Ordem | Fase | Entrega |
 | --- | --- | --- |
 | 0 | Setup tecnico | Nuxt, Tailwind, Shadcn, Pinia |
-| 1 | Layout | Shell autenticado e publico |
-| 2 | API | Cliente HTTP e erros |
-| 3 | Auth | Login, logout e sessao |
-| 4 | Permissoes | Rotas e menus por perfil |
-| 5 | Dashboard | Indicadores gerenciais |
-| 6 | Estoque | Consulta de estoque |
-| 7 | Produtos | Cadastro e edicao |
-| 8 | Movimentacoes | Entradas, saidas, ajustes e historico |
-| 9 | Alertas | Minimo e zerado |
-| 10 | Veiculos | Cadastro e listagem |
-| 11 | OS | Fluxo completo da oficina |
-| 12 | Usuarios | Gestao de usuarios |
-| 13 | UX | Refinamentos gerais |
-| 14 | Testes | Unitarios e E2E |
+| 1 | Atomic Design base | Atoms, molecules, organisms, templates |
+| 2 | Layout shell | Layout publico e autenticado |
+| 3 | API | Cliente HTTP e erros |
+| 4 | Auth | Login, logout e sessao |
+| 5 | Permissoes | Rotas e menus por perfil |
+| 6 | Dashboard | Indicadores gerenciais |
+| 7 | Estoque | Consulta de estoque |
+| 8 | Produtos | Cadastro e edicao |
+| 9 | Veiculos | Cadastro e listagem |
+| 10 | OS | Fluxo completo da oficina |
+| 11 | Movimentacoes | Entradas, saidas, ajustes e historico |
+| 12 | Alertas | Minimo e zerado |
+| 13 | Usuarios | Gestao de usuarios |
+| 14 | UX | Refinamentos gerais |
+| 15 | Testes | Unitarios e E2E |
 
-## 19. MVP Web Minimo
+## 21. MVP Web Minimo
 
 Se for necessario reduzir o escopo para entregar uma primeira versao navegavel, a ordem minima deve ser:
 
 1. Setup tecnico.
-2. Layout.
-3. Cliente API.
-4. Auth.
-5. Permissoes.
-6. Dashboard.
-7. Estoque.
-8. Produtos.
+2. Atomic Design base.
+3. Layout shell.
+4. Cliente API.
+5. Auth.
+6. Permissoes.
+7. Dashboard.
+8. Estoque.
 9. Veiculos.
 10. Ordens de servico.
 
-Movimentacoes manuais, alertas e usuarios podem entrar logo depois, mas o ideal e nao adiar por muito tempo porque fazem parte do valor central do produto.
+Produtos, movimentacoes, alertas e usuarios devem entrar logo depois, porque completam a operacao real do MVP.
 
-## 20. Proximo Passo
+## 22. Proximo Passo
 
 O proximo passo pratico e implementar a **Fase 0 - Setup Tecnico Do Front-end** criando o projeto Nuxt na pasta:
 
 ```text
 frontend/
 ```
+
+Primeira entrega esperada:
+
+- Nuxt rodando;
+- Tailwind configurado;
+- Shadcn Vue configurado;
+- Pinia configurado;
+- estrutura Atomic Design criada;
+- pagina inicial temporaria;
+- variavel `NUXT_PUBLIC_API_BASE_URL` configurada.
