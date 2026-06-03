@@ -5,11 +5,10 @@ definePageMeta({
   permission: 'inventory',
   title: 'Estoque',
 })
+
+await navigateTo('/stock', { replace: true })
 </script>
 
 <template>
-  <EmptyState
-    title="Estoque"
-    description="Esta tela sera implementada na fase de consulta de estoque."
-  />
+  <LoadingState message="Abrindo consulta de estoque..." />
 </template>
