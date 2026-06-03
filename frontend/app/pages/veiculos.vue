@@ -5,11 +5,10 @@ definePageMeta({
   permission: 'workshop',
   title: 'Veiculos',
 })
+
+await navigateTo('/vehicles', { replace: true })
 </script>
 
 <template>
-  <EmptyState
-    title="Veiculos"
-    description="Esta tela sera implementada na fase de operacao da oficina."
-  />
+  <LoadingState message="Abrindo cadastro de veiculos..." />
 </template>
