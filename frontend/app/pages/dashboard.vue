@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { Bell, Boxes, PackageSearch, Wrench } from 'lucide-vue-next'
+import { RefreshCw } from 'lucide-vue-next'
+import DashboardMetrics from '~/modules/dashboard/components/DashboardMetrics.vue'
+import MostConsumedProducts from '~/modules/dashboard/components/MostConsumedProducts.vue'
+import RecentMovements from '~/modules/dashboard/components/RecentMovements.vue'
+import { useDashboard } from '~/modules/dashboard/composables/useDashboard'
 
 definePageMeta({
   layout: 'authenticated',
@@ -8,17 +12,19 @@ definePageMeta({
   title: 'Dashboard',
 })
 
-const columns = [
-  { key: 'event', label: 'Movimentacao' },
-  { key: 'user', label: 'Usuario' },
-  { key: 'time', label: 'Horario', align: 'right' as const },
-]
+const {
+  dashboard,
+  mostConsumedProducts,
+  loading,
+  errorMessage,
+  isEmpty,
+  load,
+} = useDashboard({
+  recentMovementsLimit: 8,
+  mostConsumedLimit: 5,
+})
 
-const rows = [
-  { event: 'Entrada de filtro de oleo', user: 'Usuario Demo', time: '08:30' },
-  { event: 'Saida de pastilha de freio', user: 'Usuario Demo', time: '09:15' },
-  { event: 'Ajuste de estoque', user: 'Usuario Demo', time: '10:05' },
-]
+await load()
 </script>
 
 <template>
@@ -28,51 +34,63 @@ const rows = [
   >
     <template #actions>
       <PermissionGate permission="dashboard">
-        <AppButton>
+        <AppButton :loading="loading" @click="load">
+          <RefreshCw class="h-4 w-4" />
           Atualizar indicadores
         </AppButton>
       </PermissionGate>
     </template>
 
-    <template #metrics>
-      <MetricCard label="Produtos" value="248" description="Itens cadastrados">
-        <template #icon>
-          <Boxes class="h-5 w-5" />
-        </template>
-      </MetricCard>
-      <MetricCard label="Abaixo do minimo" value="14" description="Precisam de reposicao">
-        <template #icon>
-          <Bell class="h-5 w-5" />
-        </template>
-      </MetricCard>
-      <MetricCard label="Valor em estoque" value="R$ 42.850" description="Estimativa atual">
-        <template #icon>
-          <PackageSearch class="h-5 w-5" />
-        </template>
-      </MetricCard>
-      <MetricCard label="OS abertas" value="7" description="Servicos em andamento">
-        <template #icon>
-          <Wrench class="h-5 w-5" />
-        </template>
-      </MetricCard>
+    <template v-if="dashboard" #metrics>
+      <DashboardMetrics :dashboard="dashboard" />
     </template>
 
-    <ListPageTemplate
-      title="Movimentacoes recentes"
-      description="Eventos operacionais registrados hoje."
-    >
-      <DataTable :columns="columns" :rows="rows" />
-    </ListPageTemplate>
+    <LoadingState
+      v-if="loading && !dashboard"
+      message="Carregando indicadores do dashboard..."
+    />
 
-    <template #aside>
-      <section class="space-y-3 rounded-lg border bg-card p-4">
-        <h2 class="text-sm font-medium">
-          Alertas
-        </h2>
+    <ErrorState
+      v-else-if="errorMessage"
+      title="Erro ao carregar dashboard"
+      :message="errorMessage"
+      retry-label="Tentar novamente"
+      @retry="load"
+    />
+
+    <EmptyState
+      v-else-if="isEmpty"
+      title="Dashboard sem dados"
+      description="Cadastre produtos e registre movimentacoes para acompanhar os indicadores da oficina."
+    />
+
+    <RecentMovements
+      v-else-if="dashboard"
+      :movements="dashboard.recentMovements"
+    />
+
+    <template v-if="mostConsumedProducts" #aside>
+      <MostConsumedProducts :products="mostConsumedProducts.items" />
+
+      <section v-if="dashboard" class="space-y-3 rounded-lg border bg-card p-4">
+        <div>
+          <h2 class="text-sm font-medium">
+            Alertas de estoque
+          </h2>
+          <p class="mt-1 text-xs text-muted-foreground">
+            Situacao atual dos itens monitorados.
+          </p>
+        </div>
+
         <div class="space-y-2">
-          <StatusBadge label="Estoque baixo" tone="warning" />
-          <StatusBadge label="Estoque zerado" tone="danger" />
-          <StatusBadge label="Operacao normal" tone="success" />
+          <StatusBadge
+            :label="`${dashboard.productsBelowMinimum} abaixo do minimo`"
+            :tone="dashboard.productsBelowMinimum > 0 ? 'warning' : 'success'"
+          />
+          <StatusBadge
+            :label="`${dashboard.productsZeroStock} zerados`"
+            :tone="dashboard.productsZeroStock > 0 ? 'danger' : 'success'"
+          />
         </div>
       </section>
     </template>
