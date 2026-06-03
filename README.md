@@ -11,22 +11,52 @@ Oferecer um repositório de referência e estudo onde conceitos de IA (ex.: mode
 ## O que contém
 
 - Backend em Laravel com organização por módulos e camadas seguindo princípios de DDD e Clean Architecture.
+- Front-end em Nuxt com Atomic Design e módulos por domínio.
 - Documentação de casos de uso e sequência de implementação em `docs/` para guiar estudos e exemplos práticos.
 - Configuração Docker para facilitar execução local e reprodução do ambiente.
 
 ## Estrutura principal
 
 - `backend/` — código-fonte da aplicação (Laravel).
+- `frontend/` — código-fonte do painel web (Nuxt).
 - `docs/` — análises, casos de uso e instruções de setup.
-- `docker/` e `docker-compose.yml` — configuração para execução contendo PHP e Nginx.
+- `docker/` e `docker-compose.yml` — configuração para execução contendo backend, front-end, banco, cache e Nginx.
 
-Para mais detalhes do setup, veja: [docs/setup-backend-docker.md](docs/setup-backend-docker.md)
+## Execução Local Com Docker
+
+Subir ambiente principal:
+
+```bash
+docker compose up -d
+```
+
+Serviços principais:
+
+```text
+Backend API: http://localhost:8080
+Front-end:   http://localhost:3000
+PostgreSQL:  localhost:5432
+Redis:       localhost:6379
+```
+
+Subir apenas o front-end:
+
+```bash
+docker compose up -d frontend
+```
+
+Para mais detalhes do backend, veja: [backend/README.md](backend/README.md)
+
+Para mais detalhes do front-end, veja: [frontend/README.md](frontend/README.md)
 
 ## Tecnologias e padrões
 
 - PHP + Laravel
+- Nuxt + Vue + TypeScript
+- Tailwind CSS + Shadcn Vue
 - Domain-Driven Design (DDD)
 - Clean Architecture (separação de camadas, portas/adapters, casos de uso)
+- Atomic Design no front-end
 - Docker para ambiente de desenvolvimento
 - Testes automatizados (ex.: PHPUnit)
 
@@ -37,4 +67,3 @@ Issues, correções e pequenos exemplos práticos são bem-vindos. Prefira PRs p
 ## Licença
 
 Este projeto está licenciado sob a Licença MIT. Consulte o arquivo [LICENSE](LICENSE) para os termos completos.
-

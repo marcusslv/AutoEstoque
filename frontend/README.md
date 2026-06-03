@@ -7,6 +7,8 @@ Painel web do AutoEstoque usando Nuxt, Vue, TypeScript, Tailwind CSS, Shadcn Vue
 - Node 20 ou superior.
 - pnpm 10 ou superior.
 
+Para rodar via Docker Compose, nao e necessario instalar Node ou pnpm diretamente na maquina.
+
 ## Comandos
 
 Instalar dependencias:
@@ -22,6 +24,18 @@ pnpm dev
 ```
 
 O script `dev` define `TMPDIR=/tmp` para manter o socket interno do Vite em um caminho curto no macOS.
+
+Rodar com Docker Compose a partir da raiz do projeto:
+
+```bash
+docker compose up -d frontend
+```
+
+O front-end ficara disponivel em:
+
+```text
+http://localhost:3000
+```
 
 Variavel principal:
 

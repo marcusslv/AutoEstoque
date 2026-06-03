@@ -35,6 +35,7 @@ AutoEstoque/
     artisan
     composer.json
   docker/
+  frontend/
   docker-compose.yml
 ```
 
@@ -49,7 +50,8 @@ docker compose up -d
 A aplicacao ficara disponivel em:
 
 ```text
-http://localhost:8080
+Backend API: http://localhost:8080
+Front-end:   http://localhost:3000
 ```
 
 ## Variaveis De Ambiente
