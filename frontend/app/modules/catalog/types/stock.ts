@@ -1,4 +1,4 @@
-export type StockStatus = 'available' | 'minimum' | 'zero'
+export type StockStatus = 'available' | 'minimum' | 'below_minimum' | 'zero'
 
 export type StockItem = {
   id: string

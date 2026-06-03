@@ -2,10 +2,15 @@
 import type { StockStatus } from '../types/stock'
 
 const props = defineProps<{
-  status: StockStatus
+  status?: StockStatus | string | null
 }>()
 
-const statusMap: Record<StockStatus, { label: string, tone: 'success' | 'warning' | 'danger' }> = {
+type BadgeConfig = {
+  label: string
+  tone: 'success' | 'warning' | 'danger' | 'neutral'
+}
+
+const statusMap: Record<StockStatus, BadgeConfig> = {
   available: {
     label: 'Disponivel',
     tone: 'success',
@@ -14,16 +19,34 @@ const statusMap: Record<StockStatus, { label: string, tone: 'success' | 'warning
     label: 'Abaixo do minimo',
     tone: 'warning',
   },
+  below_minimum: {
+    label: 'Abaixo do minimo',
+    tone: 'warning',
+  },
   zero: {
     label: 'Zerado',
     tone: 'danger',
   },
 }
+
+const statusConfig = computed<BadgeConfig>(() => {
+  if (!props.status) {
+    return {
+      label: 'Nao informado',
+      tone: 'neutral',
+    }
+  }
+
+  return statusMap[props.status as StockStatus] ?? {
+    label: 'Nao informado',
+    tone: 'neutral',
+  }
+})
 </script>
 
 <template>
   <StatusBadge
-    :label="statusMap[props.status].label"
-    :tone="statusMap[props.status].tone"
+    :label="statusConfig.label"
+    :tone="statusConfig.tone"
   />
 </template>
