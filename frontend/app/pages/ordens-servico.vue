@@ -5,11 +5,10 @@ definePageMeta({
   permission: 'workshop',
   title: 'Ordens de servico',
 })
+
+await navigateTo('/service-orders', { replace: true })
 </script>
 
 <template>
-  <EmptyState
-    title="Ordens de servico"
-    description="Esta tela sera implementada na fase de ordens de servico."
-  />
+  <LoadingState message="Abrindo ordens de servico..." />
 </template>

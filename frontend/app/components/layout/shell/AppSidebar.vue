@@ -40,7 +40,7 @@ const navigationItems: NavigationItem[] = [
   { label: 'Estoque', to: '/stock', icon: Boxes, permission: 'inventory', enabled: true },
   { label: 'Alertas', to: '/alertas', icon: Bell, permission: 'inventory', enabled: false },
   { label: 'Veiculos', to: '/vehicles', icon: Car, permission: 'workshop', enabled: true },
-  { label: 'Ordens de servico', to: '/ordens-servico', icon: ClipboardList, permission: 'workshop', enabled: false },
+  { label: 'Ordens de servico', to: '/service-orders', icon: ClipboardList, permission: 'workshop', enabled: true },
   { label: 'Usuarios', to: '/usuarios', icon: Users, permission: 'users', enabled: false },
   { label: 'Configuracoes', to: '/configuracoes', icon: Settings, permission: 'settings', enabled: false },
 ]
