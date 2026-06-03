@@ -12,12 +12,15 @@ import {
 } from 'lucide-vue-next'
 import type { Component } from 'vue'
 import { cn } from '~/shared/utils/cn'
+import type { PermissionKey } from '~/shared/permissions/permissions'
+import { usePermissions } from '~/shared/permissions/usePermissions'
 
 type NavigationItem = {
   label: string
   to: string
   icon: Component
-  disabled?: boolean
+  permission: PermissionKey
+  enabled?: boolean
 }
 
 const props = defineProps<{
@@ -29,17 +32,22 @@ const emit = defineEmits<{
 }>()
 
 const route = useRoute()
+const { canAccess } = usePermissions()
 
 const navigationItems: NavigationItem[] = [
-  { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
-  { label: 'Produtos', to: '/produtos', icon: Package, disabled: true },
-  { label: 'Estoque', to: '/estoque', icon: Boxes, disabled: true },
-  { label: 'Alertas', to: '/alertas', icon: Bell, disabled: true },
-  { label: 'Veiculos', to: '/veiculos', icon: Car, disabled: true },
-  { label: 'Ordens de servico', to: '/ordens-servico', icon: ClipboardList, disabled: true },
-  { label: 'Usuarios', to: '/usuarios', icon: Users, disabled: true },
-  { label: 'Configuracoes', to: '/configuracoes', icon: Settings, disabled: true },
+  { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard, permission: 'dashboard', enabled: true },
+  { label: 'Produtos', to: '/produtos', icon: Package, permission: 'catalog', enabled: false },
+  { label: 'Estoque', to: '/estoque', icon: Boxes, permission: 'inventory', enabled: false },
+  { label: 'Alertas', to: '/alertas', icon: Bell, permission: 'inventory', enabled: false },
+  { label: 'Veiculos', to: '/veiculos', icon: Car, permission: 'workshop', enabled: false },
+  { label: 'Ordens de servico', to: '/ordens-servico', icon: ClipboardList, permission: 'workshop', enabled: false },
+  { label: 'Usuarios', to: '/usuarios', icon: Users, permission: 'users', enabled: false },
+  { label: 'Configuracoes', to: '/configuracoes', icon: Settings, permission: 'settings', enabled: false },
 ]
+
+const visibleNavigationItems = computed(() => {
+  return navigationItems.filter((item) => canAccess(item.permission))
+})
 
 const isActive = (to: string) => route.path === to || route.path.startsWith(`${to}/`)
 </script>
@@ -73,9 +81,9 @@ const isActive = (to: string) => route.path === to || route.path.startsWith(`${t
     </div>
 
     <nav class="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-      <template v-for="item in navigationItems" :key="item.to">
+      <template v-for="item in visibleNavigationItems" :key="item.to">
         <NuxtLink
-          v-if="!item.disabled"
+          v-if="item.enabled"
           :to="item.to"
           :class="cn(
             'flex h-9 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors',

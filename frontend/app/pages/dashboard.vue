@@ -3,7 +3,8 @@ import { Bell, Boxes, PackageSearch, Wrench } from 'lucide-vue-next'
 
 definePageMeta({
   layout: 'authenticated',
-  middleware: 'auth',
+  middleware: ['auth', 'role'],
+  permission: 'dashboard',
   title: 'Dashboard',
 })
 
@@ -26,9 +27,11 @@ const rows = [
     description="Visao operacional da oficina para acompanhar estoque e movimentacoes."
   >
     <template #actions>
-      <AppButton>
-        Atualizar indicadores
-      </AppButton>
+      <PermissionGate permission="dashboard">
+        <AppButton>
+          Atualizar indicadores
+        </AppButton>
+      </PermissionGate>
     </template>
 
     <template #metrics>
