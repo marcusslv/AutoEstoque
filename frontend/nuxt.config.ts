@@ -25,7 +25,7 @@ export default defineNuxtConfig({
   },
   vite: {
     optimizeDeps: {
-      include: ['lucide-vue-next'],
+      include: ['clsx', 'lucide-vue-next', 'tailwind-merge'],
     },
   },
 })

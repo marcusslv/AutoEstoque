@@ -17,6 +17,7 @@ type NavigationItem = {
   label: string
   to: string
   icon: Component
+  disabled?: boolean
 }
 
 const props = defineProps<{
@@ -31,13 +32,13 @@ const route = useRoute()
 
 const navigationItems: NavigationItem[] = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
-  { label: 'Produtos', to: '/produtos', icon: Package },
-  { label: 'Estoque', to: '/estoque', icon: Boxes },
-  { label: 'Alertas', to: '/alertas', icon: Bell },
-  { label: 'Veiculos', to: '/veiculos', icon: Car },
-  { label: 'Ordens de servico', to: '/ordens-servico', icon: ClipboardList },
-  { label: 'Usuarios', to: '/usuarios', icon: Users },
-  { label: 'Configuracoes', to: '/configuracoes', icon: Settings },
+  { label: 'Produtos', to: '/produtos', icon: Package, disabled: true },
+  { label: 'Estoque', to: '/estoque', icon: Boxes, disabled: true },
+  { label: 'Alertas', to: '/alertas', icon: Bell, disabled: true },
+  { label: 'Veiculos', to: '/veiculos', icon: Car, disabled: true },
+  { label: 'Ordens de servico', to: '/ordens-servico', icon: ClipboardList, disabled: true },
+  { label: 'Usuarios', to: '/usuarios', icon: Users, disabled: true },
+  { label: 'Configuracoes', to: '/configuracoes', icon: Settings, disabled: true },
 ]
 
 const isActive = (to: string) => route.path === to || route.path.startsWith(`${to}/`)
@@ -72,20 +73,31 @@ const isActive = (to: string) => route.path === to || route.path.startsWith(`${t
     </div>
 
     <nav class="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-      <NuxtLink
-        v-for="item in navigationItems"
-        :key="item.to"
-        :to="item.to"
-        :class="cn(
-          'flex h-9 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors',
-          isActive(item.to)
-            ? 'bg-primary text-primary-foreground'
-            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-        )"
-      >
-        <component :is="item.icon" class="h-4 w-4 shrink-0" />
-        <span class="truncate">{{ item.label }}</span>
-      </NuxtLink>
+      <template v-for="item in navigationItems" :key="item.to">
+        <NuxtLink
+          v-if="!item.disabled"
+          :to="item.to"
+          :class="cn(
+            'flex h-9 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors',
+            isActive(item.to)
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+          )"
+        >
+          <component :is="item.icon" class="h-4 w-4 shrink-0" />
+          <span class="truncate">{{ item.label }}</span>
+        </NuxtLink>
+
+        <button
+          v-else
+          type="button"
+          disabled
+          class="flex h-9 w-full items-center gap-3 rounded-md px-3 text-left text-sm font-medium text-muted-foreground/60"
+        >
+          <component :is="item.icon" class="h-4 w-4 shrink-0" />
+          <span class="truncate">{{ item.label }}</span>
+        </button>
+      </template>
     </nav>
 
     <div class="border-t px-4 py-3 text-xs text-muted-foreground">
