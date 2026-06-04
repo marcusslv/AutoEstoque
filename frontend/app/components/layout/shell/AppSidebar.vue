@@ -44,7 +44,7 @@ const navigationItems: NavigationItem[] = [
   { label: 'Veiculos', to: '/vehicles', icon: Car, permission: 'workshop', enabled: true },
   { label: 'Ordens de servico', to: '/service-orders', icon: ClipboardList, permission: 'workshop', enabled: true },
   { label: 'Usuarios', to: '/users', icon: Users, permission: 'users', enabled: true },
-  { label: 'Configuracoes', to: '/configuracoes', icon: Settings, permission: 'settings', enabled: false },
+  { label: 'Configuracoes', to: '/configuracoes', icon: Settings, permission: 'settings', enabled: true },
 ]
 
 const visibleNavigationItems = computed(() => {
