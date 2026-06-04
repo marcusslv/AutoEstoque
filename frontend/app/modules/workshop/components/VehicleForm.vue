@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ApiValidationErrors } from '~/shared/api/apiTypes'
+import { maskPhone, maskPlate } from '~/shared/utils/masks'
 import type { VehicleFormValues } from '../types/vehicle'
 
 const props = defineProps<{
@@ -32,7 +33,7 @@ const fieldError = (field: string) => props.errors?.[field]?.[0]
         :model-value="props.modelValue.plate"
         autocomplete="off"
         placeholder="ABC-1D23"
-        @update:model-value="updateField('plate', $event.toUpperCase())"
+        @update:model-value="updateField('plate', maskPlate($event))"
       />
     </FormField>
 
@@ -95,8 +96,8 @@ const fieldError = (field: string) => props.errors?.[field]?.[0]
       <AppInput
         :model-value="props.modelValue.ownerPhone"
         autocomplete="off"
-        placeholder="11999990000"
-        @update:model-value="updateField('ownerPhone', $event)"
+        placeholder="(11) 99999-0000"
+        @update:model-value="updateField('ownerPhone', maskPhone($event))"
       />
     </FormField>
   </div>

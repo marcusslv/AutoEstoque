@@ -1,17 +1,12 @@
 <script setup lang="ts">
 import { Bell, Boxes, DollarSign, Repeat2 } from 'lucide-vue-next'
+import { formatMoney } from '~/shared/utils/format'
 import type { DashboardSummary } from '../types/dashboard'
 
 const props = defineProps<{
   dashboard: DashboardSummary
 }>()
 
-const formatMoney = (valueInCents: number) => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(valueInCents / 100)
-}
 </script>
 
 <template>

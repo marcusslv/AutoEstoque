@@ -43,7 +43,7 @@ const rows = computed(() => {
             v-for="movement in row.movements"
             :key="movement.id"
           >
-            Movimento {{ movement.id }} · {{ movement.quantity }} un.
+            Movimento {{ movement.id }} - {{ movement.quantity }} un.
           </p>
         </div>
       </div>

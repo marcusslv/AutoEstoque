@@ -8,6 +8,7 @@ defineProps<{
 <template>
   <header class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
     <div class="space-y-1">
+      <Breadcrumbs />
       <h1 class="text-xl font-semibold tracking-normal">
         {{ title }}
       </h1>
@@ -16,7 +17,7 @@ defineProps<{
       </p>
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2">
       <slot name="actions" />
     </div>
   </header>

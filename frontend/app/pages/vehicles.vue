@@ -5,6 +5,7 @@ import VehicleTable from '~/modules/workshop/components/VehicleTable.vue'
 import { useVehicles } from '~/modules/workshop/composables/useVehicles'
 import type { VehicleFormValues } from '~/modules/workshop/types/vehicle'
 import { getApiErrorMessage } from '~/shared/api/apiErrors'
+import { useToast } from '~/shared/feedback/useToast'
 
 definePageMeta({
   layout: 'authenticated',
@@ -14,6 +15,7 @@ definePageMeta({
 })
 
 const search = ref('')
+const toast = useToast()
 const dialogOpen = ref(false)
 const saveErrorMessage = ref<string | null>(null)
 const {
@@ -46,6 +48,7 @@ const saveVehicle = async (values: VehicleFormValues) => {
 
   try {
     await create(values)
+    toast.success('Veiculo cadastrado')
     closeDialog()
     await load(search.value)
   } catch (error) {

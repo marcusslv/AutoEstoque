@@ -17,7 +17,7 @@ defineEmits<{
 <template>
   <Teleport to="body">
     <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 px-4 py-6">
-      <section class="w-full max-w-lg rounded-lg border bg-background p-5 shadow-lg">
+      <section class="max-h-[calc(100vh-3rem)] w-full max-w-lg overflow-y-auto rounded-lg border bg-background p-5 shadow-lg">
         <header class="space-y-1">
           <h2 class="text-lg font-semibold tracking-normal">
             {{ title }}

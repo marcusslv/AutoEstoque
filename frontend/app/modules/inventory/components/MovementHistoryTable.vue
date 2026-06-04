@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DataTableColumn } from '~/components/ui/organisms/DataTable.vue'
+import { formatDateTime } from '~/shared/utils/format'
 import MovementDirectionBadge from './MovementDirectionBadge.vue'
 import MovementOriginLink from './MovementOriginLink.vue'
 import type { StockMovement, StockMovementDirection, StockMovementServiceOrder, StockMovementType } from '../types/movement'
@@ -27,13 +28,6 @@ const typeLabels: Record<StockMovementType, string> = {
   manual_adjustment: 'Ajuste manual',
 }
 
-const formatDate = (value: string) => {
-  return new Intl.DateTimeFormat('pt-BR', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  }).format(new Date(value))
-}
-
 const rows = computed(() => {
   return props.movements.map((movement) => ({
     product: movement.product.name,
@@ -44,7 +38,7 @@ const rows = computed(() => {
     reason: movement.reason,
     note: movement.note,
     origin: movement.serviceOrder,
-    occurredAt: formatDate(movement.occurredAt),
+    occurredAt: formatDateTime(movement.occurredAt),
   }))
 })
 </script>

@@ -5,6 +5,7 @@ import UserTable from '~/modules/users/components/UserTable.vue'
 import { useUsers } from '~/modules/users/composables/useUsers'
 import type { UserFormValues, WorkshopUser } from '~/modules/users/types/user'
 import { getApiErrorMessage } from '~/shared/api/apiErrors'
+import { useToast } from '~/shared/feedback/useToast'
 
 definePageMeta({
   layout: 'authenticated',
@@ -14,6 +15,7 @@ definePageMeta({
 })
 
 const dialogOpen = ref(false)
+const toast = useToast()
 const selectedUser = ref<WorkshopUser | null>(null)
 const userToDeactivate = ref<WorkshopUser | null>(null)
 const saveErrorMessage = ref<string | null>(null)
@@ -59,8 +61,10 @@ const saveUser = async (values: UserFormValues) => {
   try {
     if (selectedUser.value) {
       await update(selectedUser.value.id, values)
+      toast.success('Usuario atualizado')
     } else {
       await create(values)
+      toast.success('Usuario cadastrado')
     }
 
     closeDialog()
@@ -89,6 +93,7 @@ const confirmDeactivate = async () => {
 
   try {
     await deactivate(userToDeactivate.value.id)
+    toast.success('Usuario inativado')
     cancelDeactivate()
     await load()
   } catch (error) {

@@ -6,6 +6,7 @@ import { useProducts } from '~/modules/catalog/composables/useProducts'
 import type { ProductFormValues } from '~/modules/catalog/types/product'
 import type { StockItem } from '~/modules/catalog/types/stock'
 import { getApiErrorMessage } from '~/shared/api/apiErrors'
+import { useToast } from '~/shared/feedback/useToast'
 
 definePageMeta({
   layout: 'authenticated',
@@ -15,6 +16,7 @@ definePageMeta({
 })
 
 const search = ref('')
+const toast = useToast()
 const dialogOpen = ref(false)
 const selectedProduct = ref<StockItem | null>(null)
 const saveErrorMessage = ref<string | null>(null)
@@ -59,8 +61,10 @@ const saveProduct = async (values: ProductFormValues) => {
   try {
     if (selectedProduct.value) {
       await update(selectedProduct.value.id, values)
+      toast.success('Produto atualizado')
     } else {
       await create(values)
+      toast.success('Produto cadastrado')
     }
 
     closeDialog()

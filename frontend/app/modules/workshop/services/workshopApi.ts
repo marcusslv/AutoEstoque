@@ -1,4 +1,5 @@
 import type { ApiClient } from '~/shared/api/apiClient'
+import { onlyDigits } from '~/shared/utils/masks'
 import type {
   AddPartFormValues,
   AddPartPayload,
@@ -39,7 +40,7 @@ const toVehiclePayload = (values: VehicleFormValues): VehiclePayload => ({
   model: values.model.trim(),
   year: Number(values.year) || new Date().getFullYear(),
   owner_name: values.ownerName.trim(),
-  owner_phone: values.ownerPhone.trim(),
+  owner_phone: onlyDigits(values.ownerPhone),
 })
 
 const nullableString = (value: string) => {

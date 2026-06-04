@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DataTableColumn } from '~/components/ui/organisms/DataTable.vue'
+import { formatDateTime } from '~/shared/utils/format'
 import ServiceOrderStatusBadge from './ServiceOrderStatusBadge.vue'
 import type { ServiceOrderListItem } from '../types/serviceOrder'
 
@@ -16,25 +17,15 @@ const columns: DataTableColumn[] = [
   { key: 'actions', label: '', align: 'right' },
 ]
 
-const formatDate = (value: string) => {
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(value))
-}
-
 const rows = computed(() => {
   return props.serviceOrders.map((serviceOrder) => ({
     id: serviceOrder.id,
     customer: serviceOrder.customerName,
     description: serviceOrder.servicesDescription,
-    vehicle: `${serviceOrder.vehicle.plate} · ${serviceOrder.vehicle.brand} ${serviceOrder.vehicle.model}`,
+    vehicle: `${serviceOrder.vehicle.plate} - ${serviceOrder.vehicle.brand} ${serviceOrder.vehicle.model}`,
     status: serviceOrder.status,
     partsTotal: serviceOrder.partsTotal,
-    openedAt: formatDate(serviceOrder.openedAt),
+    openedAt: formatDateTime(serviceOrder.openedAt),
   }))
 })
 </script>

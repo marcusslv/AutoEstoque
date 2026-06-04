@@ -7,6 +7,7 @@ import ServiceOrderSummary from '~/modules/workshop/components/ServiceOrderSumma
 import { useServiceOrderDetails } from '~/modules/workshop/composables/useServiceOrderDetails'
 import { createCatalogApi } from '~/modules/catalog/services/catalogApi'
 import type { AddPartFormValues } from '~/modules/workshop/types/serviceOrder'
+import { useToast } from '~/shared/feedback/useToast'
 
 definePageMeta({
   layout: 'authenticated',
@@ -19,6 +20,7 @@ const route = useRoute()
 const serviceOrderId = String(route.params.id)
 const { $api } = useNuxtApp()
 const catalogApi = createCatalogApi($api)
+const toast = useToast()
 const partDialogOpen = ref(false)
 const finishDialogOpen = ref(false)
 const productOptions = ref<AppSelectOption[]>([])
@@ -39,7 +41,7 @@ const {
 const loadProductOptions = async () => {
   const response = await catalogApi.listStock()
   productOptions.value = response.items.map((product) => ({
-    label: `${product.name} · ${product.sku} · saldo ${product.currentStock}`,
+    label: `${product.name} - ${product.sku} - saldo ${product.currentStock}`,
     value: product.id,
     disabled: product.currentStock <= 0,
   }))
@@ -59,6 +61,7 @@ const closePartDialog = () => {
 const savePart = async (values: AddPartFormValues) => {
   try {
     await addPart(values)
+    toast.success('Peca adicionada a OS')
     closePartDialog()
   } catch {
     // Error state is exposed by the composable.
@@ -68,6 +71,7 @@ const savePart = async (values: AddPartFormValues) => {
 const confirmFinish = async () => {
   try {
     await finish()
+    toast.success('Ordem de servico finalizada')
     finishDialogOpen.value = false
   } catch {
     // Error state is exposed by the composable.

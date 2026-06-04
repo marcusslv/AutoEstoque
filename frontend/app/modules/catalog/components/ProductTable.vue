@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DataTableColumn } from '~/components/ui/organisms/DataTable.vue'
+import { formatMoney } from '~/shared/utils/format'
 import type { StockItem } from '../types/stock'
 
 const props = defineProps<{
@@ -19,13 +20,6 @@ const columns: DataTableColumn[] = [
   { key: 'cost', label: 'Custo', align: 'right' },
   { key: 'actions', label: '', align: 'right' },
 ]
-
-const formatMoney = (valueInCents: number, currency: string) => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency,
-  }).format(valueInCents / 100)
-}
 
 const rows = computed(() => {
   return props.products.map((product) => ({

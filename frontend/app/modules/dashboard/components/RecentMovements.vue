@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DataTableColumn } from '~/components/ui/organisms/DataTable.vue'
+import { formatDateTime } from '~/shared/utils/format'
 import type { DashboardRecentMovement } from '../types/dashboard'
 
 const props = defineProps<{
@@ -13,13 +14,6 @@ const columns: DataTableColumn[] = [
   { key: 'reason', label: 'Motivo' },
   { key: 'occurredAt', label: 'Horario', align: 'right' },
 ]
-
-const formatDateTime = (value: string) => {
-  return new Intl.DateTimeFormat('pt-BR', {
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(value))
-}
 
 const movementTypeLabel = (direction: DashboardRecentMovement['direction']) => {
   return direction === 'input' ? 'Entrada' : 'Saida'

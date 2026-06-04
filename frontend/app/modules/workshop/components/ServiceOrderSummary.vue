@@ -1,22 +1,12 @@
 <script setup lang="ts">
 import ServiceOrderStatusBadge from './ServiceOrderStatusBadge.vue'
+import { formatDateTime } from '~/shared/utils/format'
 import type { ServiceOrderDetails } from '../types/serviceOrder'
 
 const props = defineProps<{
   serviceOrder: ServiceOrderDetails
 }>()
 
-const formatDate = (value: string | null) => {
-  if (!value) return '-'
-
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(value))
-}
 </script>
 
 <template>
@@ -27,7 +17,7 @@ const formatDate = (value: string | null) => {
           {{ props.serviceOrder.customerName }}
         </h2>
         <p class="mt-1 text-sm text-muted-foreground">
-          {{ props.serviceOrder.vehicle.plate }} · {{ props.serviceOrder.vehicle.brand }} {{ props.serviceOrder.vehicle.model }} · {{ props.serviceOrder.vehicle.year }}
+          {{ props.serviceOrder.vehicle.plate }} - {{ props.serviceOrder.vehicle.brand }} {{ props.serviceOrder.vehicle.model }} - {{ props.serviceOrder.vehicle.year }}
         </p>
       </div>
       <ServiceOrderStatusBadge :status="props.serviceOrder.status" />
@@ -39,7 +29,7 @@ const formatDate = (value: string | null) => {
           Abertura
         </p>
         <p class="font-medium">
-          {{ formatDate(props.serviceOrder.openedAt) }}
+          {{ formatDateTime(props.serviceOrder.openedAt) }}
         </p>
       </div>
       <div>
@@ -47,7 +37,7 @@ const formatDate = (value: string | null) => {
           Finalizacao
         </p>
         <p class="font-medium">
-          {{ formatDate(props.serviceOrder.finishedAt) }}
+          {{ formatDateTime(props.serviceOrder.finishedAt) }}
         </p>
       </div>
       <div>

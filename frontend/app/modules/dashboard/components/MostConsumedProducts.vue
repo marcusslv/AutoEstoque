@@ -32,7 +32,7 @@ const props = defineProps<{
             {{ item.product.name }}
           </p>
           <p class="truncate text-xs text-muted-foreground">
-            {{ item.product.sku }} · {{ item.movementsCount }} movimentacoes
+            {{ item.product.sku }} - {{ item.movementsCount }} movimentacoes
           </p>
         </div>
 

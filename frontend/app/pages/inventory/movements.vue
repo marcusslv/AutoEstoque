@@ -9,6 +9,7 @@ import RegisterOutputDialog from '~/modules/inventory/components/RegisterOutputD
 import { useMovements } from '~/modules/inventory/composables/useMovements'
 import type { StockMovementDirection, StockMovementFilters, StockMovementFormValues, StockMovementType } from '~/modules/inventory/types/movement'
 import { getApiErrorMessage } from '~/shared/api/apiErrors'
+import { useToast } from '~/shared/feedback/useToast'
 
 definePageMeta({
   layout: 'authenticated',
@@ -19,6 +20,7 @@ definePageMeta({
 
 const { $api } = useNuxtApp()
 const catalogApi = createCatalogApi($api)
+const toast = useToast()
 
 const productOptions = ref<AppSelectOption[]>([])
 const productId = ref('')
@@ -111,14 +113,17 @@ const saveMovement = async (values: StockMovementFormValues) => {
   try {
     if (activeDialog.value === 'entry') {
       await registerEntry(values)
+      toast.success('Entrada registrada')
     }
 
     if (activeDialog.value === 'output') {
       await registerOutput(values)
+      toast.success('Saida registrada')
     }
 
     if (activeDialog.value === 'adjustment') {
       await registerAdjustment(values)
+      toast.success('Ajuste registrado')
     }
 
     closeDialog()

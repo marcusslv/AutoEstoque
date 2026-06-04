@@ -7,6 +7,7 @@ import { useServiceOrders } from '~/modules/workshop/composables/useServiceOrder
 import { createWorkshopApi } from '~/modules/workshop/services/workshopApi'
 import type { ServiceOrderFormValues, ServiceOrderStatus } from '~/modules/workshop/types/serviceOrder'
 import { getApiErrorMessage } from '~/shared/api/apiErrors'
+import { useToast } from '~/shared/feedback/useToast'
 
 definePageMeta({
   layout: 'authenticated',
@@ -17,6 +18,7 @@ definePageMeta({
 
 const { $api } = useNuxtApp()
 const workshopApi = createWorkshopApi($api)
+const toast = useToast()
 const search = ref('')
 const status = ref<ServiceOrderStatus | ''>('open')
 const dialogOpen = ref(false)
@@ -50,7 +52,7 @@ const currentFilters = () => ({
 const loadVehicleOptions = async () => {
   const response = await workshopApi.listVehicles({ limit: 100 })
   vehicleOptions.value = response.items.map((vehicle) => ({
-    label: `${vehicle.plate} · ${vehicle.brand} ${vehicle.model} · ${vehicle.ownerName}`,
+    label: `${vehicle.plate} - ${vehicle.brand} ${vehicle.model} - ${vehicle.ownerName}`,
     value: vehicle.id,
   }))
 }
@@ -72,6 +74,7 @@ const saveServiceOrder = async (values: ServiceOrderFormValues) => {
 
   try {
     await create(values)
+    toast.success('Ordem de servico criada')
     closeDialog()
     await load(currentFilters())
   } catch (error) {
