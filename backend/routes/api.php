@@ -19,6 +19,8 @@ use App\Modules\Inventory\Interfaces\Http\Controllers\ListStockMovementHistoryCo
 use App\Modules\Inventory\Interfaces\Http\Controllers\RegisterStockAdjustmentController;
 use App\Modules\Inventory\Interfaces\Http\Controllers\RegisterStockEntryController;
 use App\Modules\Inventory\Interfaces\Http\Controllers\RegisterStockOutputController;
+use App\Modules\Settings\Interfaces\Http\Controllers\GetWorkshopSettingsController;
+use App\Modules\Settings\Interfaces\Http\Controllers\UpdateWorkshopSettingsController;
 use App\Modules\Tenant\Application\TenantContext;
 use App\Modules\Workshop\Interfaces\Http\Controllers\AddPartToServiceOrderController;
 use App\Modules\Workshop\Interfaces\Http\Controllers\CreateServiceOrderController;
@@ -55,6 +57,8 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/users', CreateWorkshopUserController::class)->middleware($backOfficeRoles);
         Route::patch('/users/{user}', UpdateWorkshopUserController::class)->middleware($backOfficeRoles);
         Route::patch('/users/{user}/deactivate', DeactivateWorkshopUserController::class)->middleware($backOfficeRoles);
+        Route::get('/settings/workshop', GetWorkshopSettingsController::class)->middleware($backOfficeRoles);
+        Route::patch('/settings/workshop', UpdateWorkshopSettingsController::class)->middleware($backOfficeRoles);
         Route::get('/dashboard', ViewDashboardController::class)->middleware($backOfficeRoles);
         Route::get('/dashboard/most-consumed-products', ListMostConsumedProductsController::class)->middleware($backOfficeRoles);
         Route::get('/stock', ListStockController::class)->middleware($workshopRoles);

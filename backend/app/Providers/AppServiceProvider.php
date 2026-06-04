@@ -31,6 +31,8 @@ use App\Modules\Inventory\Infrastructure\Persistence\Eloquent\Queries\EloquentSt
 use App\Modules\Inventory\Infrastructure\Persistence\Eloquent\Queries\EloquentZeroStockAlertQuery;
 use App\Modules\Inventory\Infrastructure\Persistence\Eloquent\Repositories\EloquentInventoryItemRepository;
 use App\Modules\Inventory\Infrastructure\Persistence\Eloquent\Repositories\EloquentStockMovementRepository;
+use App\Modules\Settings\Domain\Repositories\WorkshopSettingsRepository;
+use App\Modules\Settings\Infrastructure\Persistence\Eloquent\Repositories\EloquentWorkshopSettingsRepository;
 use App\Modules\Shared\Application\Contracts\TransactionManager;
 use App\Modules\Shared\Infrastructure\Persistence\LaravelTransactionManager;
 use App\Modules\Tenant\Application\TenantContext;
@@ -80,6 +82,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(MinimumStockAlertQuery::class, EloquentMinimumStockAlertQuery::class);
         $this->app->bind(ZeroStockAlertQuery::class, EloquentZeroStockAlertQuery::class);
         $this->app->bind(StockMovementHistoryQuery::class, EloquentStockMovementHistoryQuery::class);
+        $this->app->bind(WorkshopSettingsRepository::class, EloquentWorkshopSettingsRepository::class);
         $this->app->bind(TransactionManager::class, LaravelTransactionManager::class);
     }
 

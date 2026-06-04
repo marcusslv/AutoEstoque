@@ -39,10 +39,59 @@ class DevelopmentSeeder extends Seeder
         ], ['id'], ['name', 'document', 'status', 'updated_at']);
 
         $this->seedUsers($now);
+        $this->seedWorkshopSettings($now);
         $this->seedProducts($now);
         $this->seedInventory($now);
         $this->seedVehicles($now);
         $this->seedServiceOrders($now);
+    }
+
+    private function seedWorkshopSettings(mixed $now): void
+    {
+        DB::table('workshop_settings')->upsert([
+            [
+                'id' => '018f95f2-0f08-7f85-9b31-2d833a1a2150',
+                'tenant_id' => self::TENANT_ID,
+                'display_name' => 'AutoEstoque Oficina Demo',
+                'legal_name' => 'AutoEstoque Oficina Demo LTDA',
+                'document' => '12345678000190',
+                'phone' => '11999990000',
+                'email' => 'contato@autoestoque.test',
+                'address' => 'Rua das Oficinas, 100',
+                'timezone' => 'America/Sao_Paulo',
+                'currency' => 'BRL',
+                'allow_negative_stock' => false,
+                'auto_deduct_stock_on_service_order_finish' => true,
+                'minimum_stock_default' => 2,
+                'notify_minimum_stock' => true,
+                'notify_zero_stock' => true,
+                'notification_email' => 'alertas@autoestoque.test',
+                'notification_phone' => '11999990000',
+                'plan' => 'starter',
+                'user_limit' => 3,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        ], ['tenant_id'], [
+            'display_name',
+            'legal_name',
+            'document',
+            'phone',
+            'email',
+            'address',
+            'timezone',
+            'currency',
+            'allow_negative_stock',
+            'auto_deduct_stock_on_service_order_finish',
+            'minimum_stock_default',
+            'notify_minimum_stock',
+            'notify_zero_stock',
+            'notification_email',
+            'notification_phone',
+            'plan',
+            'user_limit',
+            'updated_at',
+        ]);
     }
 
     private function seedUsers(mixed $now): void

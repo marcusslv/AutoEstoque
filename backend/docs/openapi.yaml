@@ -15,6 +15,7 @@ tags:
   - name: Auth
   - name: Context
   - name: Users
+  - name: Settings
   - name: Dashboard
   - name: Catalog
   - name: Inventory
@@ -211,6 +212,41 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+  /settings/workshop:
+    get:
+      tags: [Settings]
+      summary: Consultar configuracoes da oficina
+      description: Requer perfil `owner`, `manager` ou `admin`.
+      responses:
+        "200":
+          description: Configuracoes atuais da oficina.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkshopSettingsResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    patch:
+      tags: [Settings]
+      summary: Atualizar configuracoes da oficina
+      description: Requer perfil `owner`, `manager` ou `admin`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateWorkshopSettingsRequest"
+      responses:
+        "200":
+          description: Configuracoes atualizadas.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkshopSettingsResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
   /dashboard:
     get:
       tags: [Dashboard]
@@ -865,6 +901,78 @@ components:
         status:
           type: string
           enum: [active, inactive]
+    UpdateWorkshopSettingsRequest:
+      type: object
+      required:
+        - display_name
+        - timezone
+        - currency
+        - allow_negative_stock
+        - auto_deduct_stock_on_service_order_finish
+        - minimum_stock_default
+        - notify_minimum_stock
+        - notify_zero_stock
+      properties:
+        display_name:
+          type: string
+          example: AutoEstoque Oficina Demo
+        legal_name:
+          type: [string, "null"]
+        document:
+          type: [string, "null"]
+          example: "12345678000190"
+        phone:
+          type: [string, "null"]
+          example: "11999990000"
+        email:
+          type: [string, "null"]
+          format: email
+        address:
+          type: [string, "null"]
+        timezone:
+          type: string
+          example: America/Sao_Paulo
+        currency:
+          type: string
+          enum: [BRL]
+        allow_negative_stock:
+          type: boolean
+        auto_deduct_stock_on_service_order_finish:
+          type: boolean
+        minimum_stock_default:
+          type: integer
+          minimum: 0
+        notify_minimum_stock:
+          type: boolean
+        notify_zero_stock:
+          type: boolean
+        notification_email:
+          type: [string, "null"]
+          format: email
+        notification_phone:
+          type: [string, "null"]
+    WorkshopSettings:
+      allOf:
+        - $ref: "#/components/schemas/UpdateWorkshopSettingsRequest"
+        - type: object
+          properties:
+            id:
+              $ref: "#/components/schemas/Uuid"
+            tenant_id:
+              $ref: "#/components/schemas/Uuid"
+            plan:
+              type: string
+              enum: [starter, pro]
+            user_limit:
+              type: integer
+            updated_at:
+              type: string
+              format: date-time
+    WorkshopSettingsResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/WorkshopSettings"
     ProductRequest:
       type: object
       required: [name, sku, cost_in_cents]
