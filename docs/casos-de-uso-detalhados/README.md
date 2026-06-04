@@ -29,4 +29,4 @@ Cada caso de uso possui:
 | UC16 | Finalizar ordem de servico com baixa automatica | [detalhamento](UC16-finalizar-ordem-de-servico-com-baixa-automatica/detalhamento.md) | [diagrama](UC16-finalizar-ordem-de-servico-com-baixa-automatica/diagrama.md) |
 | UC17 | Consultar historico de movimentacoes | [detalhamento](UC17-consultar-historico-de-movimentacoes/detalhamento.md) | [diagrama](UC17-consultar-historico-de-movimentacoes/diagrama.md) |
 | UC18 | Consultar produtos mais consumidos | [detalhamento](UC18-consultar-produtos-mais-consumidos/detalhamento.md) | [diagrama](UC18-consultar-produtos-mais-consumidos/diagrama.md) |
-
+| UC19 | Gerenciar configuracoes da oficina | [detalhamento](UC19-gerenciar-configuracoes-da-oficina/detalhamento.md) | [diagrama](UC19-gerenciar-configuracoes-da-oficina/diagrama.md) |

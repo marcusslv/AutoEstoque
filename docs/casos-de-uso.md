@@ -91,6 +91,7 @@ Ator indireto, representado no sistema por meio do cadastro de veiculos e ordens
 | UC16 | Finalizar ordem de servico com baixa automatica | Mecanico/Sistema | Alta | Fase 2 |
 | UC17 | Consultar historico de movimentacoes | Gerente/Administrativo | Alta | MVP |
 | UC18 | Consultar produtos mais consumidos | Gerente | Media | MVP/Fase 3 |
+| UC19 | Gerenciar configuracoes da oficina | Proprietario/Gerente | Media | MVP/Fase 2 |
 
 ## 5. Casos De Uso Detalhados
 
@@ -671,6 +672,41 @@ Proprietario/Gerente.
 ### Resultado Esperado
 
 Gerente identifica pecas de maior giro e melhora o planejamento de compras.
+
+## UC19 - Gerenciar Configuracoes Da Oficina
+
+### Objetivo
+
+Permitir que o proprietario ou gerente configure dados cadastrais, parametros operacionais e preferencias de notificacao da oficina.
+
+### Ator Principal
+
+Proprietario/Gerente.
+
+### Pre-condicoes
+
+- Usuario autenticado.
+- Usuario vinculado a uma oficina.
+- Usuario com permissao para administrar configuracoes.
+
+### Fluxo Principal
+
+1. Usuario acessa o modulo de configuracoes.
+2. Sistema exibe as configuracoes atuais da oficina.
+3. Usuario altera dados cadastrais, parametros operacionais ou preferencias de notificacao.
+4. Sistema valida dados, permissoes e restricoes do plano.
+5. Sistema salva as configuracoes no tenant da oficina.
+6. Sistema informa que as configuracoes foram atualizadas.
+
+### Fluxos Alternativos
+
+- Usuario sem permissao: sistema bloqueia acesso.
+- Dados invalidos: sistema informa campos que precisam ser corrigidos.
+- Recurso indisponivel no plano: sistema bloqueia alteracao e informa restricao.
+
+### Resultado Esperado
+
+Oficina possui configuracoes atualizadas e aplicadas aos proximos fluxos operacionais do sistema.
 
 ## 6. Casos De Uso Essenciais Para O MVP
 

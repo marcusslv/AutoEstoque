@@ -58,7 +58,17 @@ Conceitos principais:
 
 No inicio, este modulo pode ser implementado de forma minima para permitir que os demais modulos ja salvem dados com `tenant_id`.
 
-## 3.3 Catalog
+## 3.3 Settings/Tenant
+
+Responsavel por configuracoes cadastrais, operacionais e preferencias da oficina.
+
+Casos de uso:
+
+- UC19 - Gerenciar configuracoes da oficina.
+
+Este modulo depende de Tenant/Organization e Identity & Access para garantir que apenas usuarios autorizados alterem configuracoes do tenant atual.
+
+## 3.4 Catalog
 
 Responsavel pelo cadastro das pecas e dados cadastrais relacionados.
 
@@ -68,7 +78,7 @@ Casos de uso:
 - UC05 - Editar produto/peca.
 - Parte do UC06 - Consultar estoque, quando envolver dados cadastrais do produto.
 
-## 3.4 Inventory
+## 3.5 Inventory
 
 Responsavel por saldo, movimentacoes e alertas de estoque.
 
@@ -83,7 +93,7 @@ Casos de uso:
 - UC17 - Consultar historico de movimentacoes.
 - UC18 - Consultar produtos mais consumidos.
 
-## 3.5 Workshop Operations
+## 3.6 Workshop Operations
 
 Responsavel por veiculos e ordens de servico.
 
@@ -94,7 +104,7 @@ Casos de uso:
 - UC15 - Adicionar pecas a ordem de servico.
 - UC16 - Finalizar ordem de servico com baixa automatica.
 
-## 3.6 Dashboard/Reporting
+## 3.7 Dashboard/Reporting
 
 Responsavel por indicadores e consultas agregadas.
 
@@ -515,11 +525,44 @@ Implementacao sugerida:
 - Desativar usuario.
 - Definir papel/permissao.
 
+## 15. UC19 - Gerenciar Configuracoes Da Oficina
+
+Modulo principal:
+
+- Settings/Tenant.
+
+Dependencias:
+
+- UC01.
+- UC03.
+- Tenant/Organization.
+
+Objetivo:
+
+- Permitir que o proprietario ou gerente configure dados cadastrais, parametros operacionais e preferencias da oficina.
+
+Componentes esperados:
+
+- `GetWorkshopSettingsInput`.
+- `GetWorkshopSettingsOutput`.
+- `GetWorkshopSettingsUseCase`.
+- `UpdateWorkshopSettingsInput`.
+- `UpdateWorkshopSettingsOutput`.
+- `UpdateWorkshopSettingsUseCase`.
+
+Regras importantes:
+
+- Configuracoes devem pertencer ao tenant atual.
+- Apenas perfis administrativos podem alterar configuracoes.
+- Dados de plano podem ser consultados, mas nao alterados diretamente.
+- Alteracoes operacionais devem valer apenas para novas acoes.
+- Deve haver configuracoes padrao ao criar uma nova oficina.
+
 ## Fase 5 - Operacao Da Oficina
 
 Esta fase conecta estoque ao fluxo operacional da oficina.
 
-## 15. UC13 - Cadastrar Veiculo
+## 16. UC13 - Cadastrar Veiculo
 
 Modulo principal:
 
@@ -540,7 +583,7 @@ Componentes esperados:
 - `CreateVehicleUseCase`.
 - Dados de proprietario e telefone.
 
-## 16. UC14 - Criar Ordem De Servico
+## 17. UC14 - Criar Ordem De Servico
 
 Modulo principal:
 
@@ -562,7 +605,7 @@ Componentes esperados:
 - `CreateServiceOrderUseCase`.
 - Status inicial da ordem.
 
-## 17. UC15 - Adicionar Pecas A Ordem De Servico
+## 18. UC15 - Adicionar Pecas A Ordem De Servico
 
 Modulos envolvidos:
 
@@ -585,7 +628,7 @@ Observacao:
 - Nesta etapa, a peca pode ser apenas reservada ou vinculada a ordem.
 - A baixa definitiva deve acontecer no UC16.
 
-## 18. UC16 - Finalizar Ordem De Servico Com Baixa Automatica
+## 19. UC16 - Finalizar Ordem De Servico Com Baixa Automatica
 
 Modulos envolvidos:
 
@@ -628,10 +671,11 @@ Regras importantes:
 | 12 | Identity & Access | UC01 - Autenticar usuario | Formaliza acesso real ao sistema |
 | 13 | Identity & Access | UC02 - Recuperar senha | Completa fluxo basico de acesso |
 | 14 | Identity & Access | UC03 - Gerenciar usuarios da oficina | Permite operacao multiusuario |
-| 15 | Workshop Operations | UC13 - Cadastrar veiculo | Inicia modulo operacional da oficina |
-| 16 | Workshop Operations | UC14 - Criar ordem de servico | Cria fluxo de servicos |
-| 17 | Workshop Operations | UC15 - Adicionar pecas a ordem de servico | Integra OS com catalogo |
-| 18 | Workshop Operations/Inventory | UC16 - Finalizar OS com baixa automatica | Entrega diferencial principal do produto |
+| 15 | Settings/Tenant | UC19 - Gerenciar configuracoes da oficina | Centraliza preferencias operacionais do tenant |
+| 16 | Workshop Operations | UC13 - Cadastrar veiculo | Inicia modulo operacional da oficina |
+| 17 | Workshop Operations | UC14 - Criar ordem de servico | Cria fluxo de servicos |
+| 18 | Workshop Operations | UC15 - Adicionar pecas a ordem de servico | Integra OS com catalogo |
+| 19 | Workshop Operations/Inventory | UC16 - Finalizar OS com baixa automatica | Entrega diferencial principal do produto |
 
 ## 6. Ordem Alternativa Para MVP Comercial
 
