@@ -770,12 +770,15 @@ Adicionar testes onde houver maior risco de regressao.
 
 Entregas:
 
+- infraestrutura de testes com Vitest;
+- infraestrutura de testes E2E com Playwright;
+- setup de mocks para composables globais do Nuxt;
 - testes de auth store;
 - testes de permissoes;
 - testes de atoms/molecules criticos;
 - testes de services com mocks;
 - teste E2E do fluxo de login;
-- teste E2E de criar OS e finalizar.
+- documentacao dos comandos de teste no README do front-end.
 
 Ferramentas sugeridas:
 
@@ -787,8 +790,13 @@ Critérios de aceite:
 
 - login testado;
 - permissao por perfil testada;
-- fluxo de OS testado;
+- services criticos testados com mocks;
+- componente visual critico testado;
 - pipeline consegue rodar testes.
+
+Observacao:
+
+O E2E de criar OS e finalizar deve entrar como ampliacao da suite apos estabilizar massa de dados/mocks para o fluxo completo de oficina.
 
 ## 20. Ordem Resumida
 

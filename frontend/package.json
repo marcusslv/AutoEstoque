@@ -7,7 +7,11 @@
     "dev": "TMPDIR=/tmp nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:all": "pnpm exec vue-tsc --noEmit && pnpm test && pnpm test:e2e"
   },
   "dependencies": {
     "@nuxtjs/tailwindcss": "^6.14.0",
@@ -21,8 +25,14 @@
     "tailwindcss": "^3.4.17"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@types/node": "^24.10.0",
+    "@vitejs/plugin-vue": "^6.0.7",
+    "@vue/test-utils": "^2.4.6",
+    "jsdom": "^25.0.1",
     "typescript": "^5.7.2",
+    "vitest": "^2.1.9",
+    "vue": "^3.5.35",
     "vue-tsc": "^3.1.4"
   },
   "packageManager": "pnpm@10.28.2"

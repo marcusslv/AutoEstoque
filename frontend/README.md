@@ -43,6 +43,29 @@ Variavel principal:
 NUXT_PUBLIC_API_BASE_URL=http://localhost:8080/api/v1
 ```
 
+## Testes
+
+Rodar testes unitarios:
+
+```bash
+pnpm test
+```
+
+Rodar testes E2E com Playwright:
+
+```bash
+pnpm test:e2e
+```
+
+Rodar a validacao principal do front-end:
+
+```bash
+pnpm exec vue-tsc --noEmit
+pnpm test
+pnpm test:e2e
+pnpm build
+```
+
 ## Arquitetura
 
 A estrutura segue Atomic Design para componentes visuais e modulos por dominio para regras do AutoEstoque.
