@@ -1039,7 +1039,7 @@ components:
               type: integer
             stock_status:
               type: string
-              enum: [available, minimum, zero]
+              enum: [available, below_minimum, zero]
     StockListResponse:
       type: object
       properties:
@@ -1184,6 +1184,9 @@ components:
           items:
             type: object
             properties:
+              type:
+                type: string
+                example: minimum_stock
               product_id:
                 $ref: "#/components/schemas/Uuid"
               product:
@@ -1233,6 +1236,11 @@ components:
         data:
           type: object
           properties:
+            tenant_id:
+              $ref: "#/components/schemas/Uuid"
+            date:
+              type: string
+              format: date
             total_products:
               type: integer
             products_below_minimum:
@@ -1246,7 +1254,33 @@ components:
             recent_movements:
               type: array
               items:
-                $ref: "#/components/schemas/StockMovement"
+                $ref: "#/components/schemas/DashboardRecentMovement"
+    DashboardRecentMovement:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        product_id:
+          $ref: "#/components/schemas/Uuid"
+        product:
+          type: object
+          properties:
+            name:
+              type: string
+            sku:
+              type: string
+        direction:
+          type: string
+          enum: [entry, output]
+        type:
+          type: string
+        quantity:
+          type: integer
+        reason:
+          type: string
+        occurred_at:
+          type: string
+          format: date-time
     MostConsumedProductsResponse:
       type: object
       properties:
@@ -1269,7 +1303,20 @@ components:
               movements_count:
                 type: integer
         meta:
-          $ref: "#/components/schemas/TotalMeta"
+          $ref: "#/components/schemas/MostConsumedProductsMeta"
+    MostConsumedProductsMeta:
+      type: object
+      properties:
+        tenant_id:
+          $ref: "#/components/schemas/Uuid"
+        period_from:
+          type: [string, "null"]
+          format: date
+        period_to:
+          type: [string, "null"]
+          format: date
+        total:
+          type: integer
     VehicleRequest:
       type: object
       required: [plate, brand, model, year, owner_name, owner_phone]
@@ -1368,14 +1415,46 @@ components:
         data:
           type: array
           items:
-            allOf:
-              - $ref: "#/components/schemas/ServiceOrderSummary"
-              - type: object
-                properties:
-                  vehicle:
-                    $ref: "#/components/schemas/Vehicle"
+            $ref: "#/components/schemas/ServiceOrderListItem"
         meta:
           $ref: "#/components/schemas/TotalMeta"
+    ServiceOrderListItem:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        tenant_id:
+          $ref: "#/components/schemas/Uuid"
+        customer_name:
+          type: string
+        services_description:
+          type: string
+        observations:
+          type: [string, "null"]
+        status:
+          type: string
+          enum: [open, finished]
+        opened_at:
+          type: string
+          format: date-time
+        finished_at:
+          type: [string, "null"]
+          format: date-time
+        vehicle:
+          type: object
+          properties:
+            id:
+              $ref: "#/components/schemas/Uuid"
+            plate:
+              type: string
+            brand:
+              type: string
+            model:
+              type: string
+            owner_name:
+              type: string
+        parts_total:
+          type: integer
     ServiceOrderDetailsResponse:
       type: object
       properties:
